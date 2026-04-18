@@ -5,5 +5,6 @@ baseurl: ""
 
 show_downloads: false
 google_analytics: ""
+# Force rebuild to sync scripts across all pages
 plugins:
   - jekyll-remote-theme

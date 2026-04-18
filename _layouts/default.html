@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
 </head>
 <body>
+    {% if page.url == "/" or page.url == "/index" or page.url == "/index.html" %}
     <div class="cursor-dot" data-cursor-dot style="opacity: 0;"></div>
     <div class="cursor-outline" data-cursor-outline style="opacity: 0;">
         <div class="compass-n">N</div>
@@ -16,6 +17,7 @@
         <div class="compass-e">E</div>
         <div class="compass-w">W</div>
     </div>
+    {% endif %}
 
     <nav class="glass-nav">
         <div class="nav-branding">
@@ -34,6 +36,8 @@
     </nav>
 
     {{ content }}
+
+    {% if page.url == "/" or page.url == "/index" or page.url == "/index.html" %}
 
     <script>
         const cursorDot = document.querySelector("[data-cursor-dot]");
@@ -58,5 +62,6 @@
             cursorOutline.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
         });
     </script>
+    {% endif %}
 </body>
 </html>

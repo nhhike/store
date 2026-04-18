@@ -136,22 +136,36 @@ body {
 
 .app-card:hover { transform: translateY(-10px); background: rgba(255, 255, 255, 0.08); }
 
-.app-card h3 { font-size: 1.8rem; margin-bottom: 10px; color: var(--accent); }
-.app-card p { font-size: 0.95rem; color: var(--text-dim); margin-bottom: 25px; }
+.app-card h3 { font-size: 1.8rem; margin-bottom: 20px; color: var(--accent); }
+.app-card p { font-size: 0.95rem; color: var(--text-dim); margin-bottom: 25px; min-height: 3em; }
 
-.app-card-links { display: flex; flex-direction: column; gap: 12px; }
+.app-card-links { 
+    display: flex; flex-direction: column; gap: 15px; 
+    padding: 20px; background: rgba(0, 0, 0, 0.2); 
+    border-radius: 20px; border: 1px solid var(--glass-border);
+}
 
 .card-btn {
     display: flex; align-items: center; justify-content: center;
-    padding: 12px; border-radius: 12px; font-weight: 600; font-size: 0.9rem;
+    padding: 14px 20px; border-radius: 50px; font-weight: 700; font-size: 0.85rem;
     text-decoration: none; transition: 0.3s;
-    background: rgba(255, 255, 255, 0.05); color: #fff;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: var(--glass); color: #fff;
+    border: 1px solid var(--glass-border);
+    text-transform: uppercase; letter-spacing: 1px;
 }
 
-.card-btn:hover { background: var(--primary); border-color: var(--primary-light); }
-.card-btn.primary { background: var(--primary); color: #fff; border: none; }
-.card-btn.primary:hover { background: var(--primary-light); }
+.card-btn:hover { 
+    background: var(--accent); color: var(--bg-dark); 
+    transform: scale(1.02); border-color: var(--accent);
+}
+
+.card-btn.primary { 
+    background: var(--primary); color: #fff; border: 1px solid var(--primary-light); 
+}
+
+.card-btn.primary:hover { 
+    background: var(--primary-light); color: #fff; 
+}
 
 .coming-soon { opacity: 0.5; font-style: italic; }
 

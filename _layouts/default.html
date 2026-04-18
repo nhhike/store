@@ -9,21 +9,21 @@
     <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
 </head>
 <body>
-    <div class="cursor-dot" data-cursor-dot></div>
-    <div class="cursor-outline" data-cursor-outline>
+    <div class="cursor-dot" data-cursor-dot style="opacity: 0;"></div>
+    <div class="cursor-outline" data-cursor-outline style="opacity: 0;">
         <div class="compass-n">N</div>
         <div class="compass-s">S</div>
         <div class="compass-e">E</div>
         <div class="compass-w">W</div>
     </div>
 
-    <div class="logo-top-center">
-        <a href="{{ '/' | relative_url }}">
-            <img src="{{ '/assets/images/Logo.png' | relative_url }}" alt="NH-Hike Logo">
-        </a>
-    </div>
-
     <nav class="glass-nav">
+        <div class="nav-branding">
+            <a href="{{ '/' | relative_url }}" class="nav-logo">
+                <img src="{{ '/assets/images/Logo.png' | relative_url }}" alt="NH-Hike Logo">
+            </a>
+            <a href="{{ '/' | relative_url }}" class="nav-home">Home</a>
+        </div>
         <div class="nav-links">
             <a href="{{ '/trails.html' | relative_url }}">Trails</a>
             <a href="{{ '/gear.html' | relative_url }}">Gear</a>
@@ -39,12 +39,15 @@
         const cursorOutline = document.querySelector("[data-cursor-outline]");
 
         window.addEventListener("mousemove", function (e) {
+            cursorDot.style.opacity = "1";
+            cursorOutline.opacity = "1";
+            // Check if cursorOutline has a style property for opacity
+            cursorOutline.style.opacity = "1";
+
             const posX = e.clientX;
             const posY = e.clientY;
             const screenWidth = window.innerWidth;
             
-            // Calculate rotation based on X position relative to center
-            // At center: 0deg. Far left: +90deg. Far right: -90deg.
             const rotation = ((posX - screenWidth / 2) / (screenWidth / 2)) * -90;
 
             cursorDot.style.left = `${posX}px`;

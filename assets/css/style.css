@@ -24,7 +24,7 @@ body {
 
 .logo-top-center {
     position: absolute;
-    top: 40px;
+    top: 30px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 110;
@@ -32,15 +32,17 @@ body {
 }
 
 .logo-top-center img {
-    height: 80px;
+    height: 70px;
     width: auto;
-    filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+    filter: drop-shadow(0 0 15px rgba(0,0,0,0.6));
 }
 
 .hero {
     height: 100vh;
     width: 100%;
-    display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+    display: flex; flex-direction: column; 
+    justify-content: center; align-items: center; text-align: center;
+    padding-top: 100px;
 }
 
 .hero h1 {
@@ -49,51 +51,70 @@ body {
 }
 
 .glass-nav {
-    position: fixed; top: 140px; left: 50%; transform: translateX(-50%);
-    width: 90%; background: var(--glass); backdrop-filter: blur(10px);
-    border: 1px solid var(--glass-border); border-radius: 50px; padding: 10px 30px;
+    position: fixed; top: 120px; left: 50%; transform: translateX(-50%);
+    width: min(90%, 800px); background: var(--glass); backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border); border-radius: 50px; padding: 12px 40px;
     display: flex; justify-content: center; align-items: center; z-index: 100;
 }
 
 .logo { font-weight: 800; font-size: 1.5rem; color: #fff; text-decoration: none; }
-.nav-links { display: flex; gap: 20px; }
-.nav-links a { color: #ccc; text-decoration: none; font-size: 0.9rem; }
+.nav-links { display: flex; gap: 30px; }
+.nav-links a { 
+    color: #fff; text-decoration: none; font-size: 0.95rem; font-weight: 500;
+    transition: 0.3s;
+}
+.nav-links a:hover { color: var(--accent); }
 
 .btn {
     padding: 12px 30px; background: var(--primary); color: #fff;
     text-decoration: none; border-radius: 30px; font-weight: 600;
     transition: 0.3s; border: 1px solid var(--primary-light);
+    margin-left: 30px;
 }
 .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
 
-/* Custom cursor - Compass Design */
+/* Custom cursor - Realistic Compass Design */
 .cursor-dot {
-    width: 2px; height: 16px; background-color: var(--accent);
+    width: 2px; height: 30px; background: linear-gradient(to bottom, #ff4d4d 50%, #e2e8f0 50%);
     position: fixed; top: 0; left: 0; border-radius: 2px;
     pointer-events: none; z-index: 9999;
     transform: translate(-50%, -50%);
 }
 
+.cursor-dot::after {
+    content: ''; position: absolute; top: 50%; left: 50%;
+    width: 6px; height: 6px; background: #334155;
+    border-radius: 50%; transform: translate(-50%, -50%);
+}
+
 .cursor-outline {
-    width: 50px; height: 50px; border: 1px solid rgba(249, 168, 37, 0.4);
+    width: 60px; height: 60px; 
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(4px);
+    border: 2px solid var(--accent);
     position: fixed; top: 0; left: 0; border-radius: 50%;
     pointer-events: none; z-index: 9998;
     display: flex; justify-content: center; align-items: center;
     transform: translate(-50%, -50%);
+    box-shadow: 0 0 20px rgba(249, 168, 37, 0.2);
 }
 
 .cursor-outline div {
-    position: absolute; background: var(--accent);
+    position: absolute; font-size: 9px; font-weight: 900; 
+    color: var(--accent); background: transparent;
 }
 
-.compass-n {
-    top: -12px; font-size: 8px; font-weight: 800; color: var(--accent);
-    background: transparent !important;
-}
+.compass-n { top: 4px; }
+.compass-s { bottom: 4px; opacity: 0.7; }
+.compass-e { right: 4px; opacity: 0.7; }
+.compass-w { left: 4px; opacity: 0.7; }
 
-.compass-s { bottom: 0; width: 1px; height: 6px; }
-.compass-e { right: 0; width: 6px; height: 1px; }
-.compass-w { left: 0; width: 6px; height: 1px; }
+.cursor-outline::before {
+    content: ''; position: absolute;
+    width: 80%; height: 80%;
+    border: 1px dashed rgba(249, 168, 37, 0.2);
+    border-radius: 50%;
+}
 
 /* Base Responsive Elements */
 .hero-content {

@@ -4,10 +4,39 @@ title: App Development
 ---
 
 <header class="hero">
-    <div class="hero-content" style="margin-top: auto;">
+    <div class="hero-content">
         <h1>App Development</h1>
-        <p>Expert mobile and web solutions tailored for outdoor adventure brands.</p>
+        <p>Expert mobile and web solutions tailored for your outdoor adventures.</p>
+        
+        <div class="card-grid">
+            <!-- App 1: HikerLog -->
+            <div class="app-card">
+                <h3>HikerLog</h3>
+                <p>The ultimate logbook for your New Hampshire hikes. Track trails, conditions, and gear.</p>
+                <div class="app-card-links">
+                    <a href="https://github.com/nhhike/store/issues" class="card-btn">
+                        <span>Report Bug (GitHub)</span>
+                    </a>
+                    <a href="{{ '/assets/releases/HikerLog.apk' | relative_url }}" class="card-btn primary">
+                        <span>Download APK</span>
+                    </a>
+                    <a href="{{ '/assets/docs/HikerLog_Manual.pdf' | relative_url }}" class="card-btn">
+                        <span>Download Documentation</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- App 2: Coming Soon -->
+            <div class="app-card">
+                <h3>App 2</h3>
+                <p class="coming-soon">Next adventure utility coming soon...</p>
+                <div class="app-card-links">
+                    <button class="card-btn" disabled>Coming Soon</button>
+                </div>
+            </div>
+        </div>
     </div>
+    
     <div class="hero-footer">
         <a href="{{ '/' | relative_url }}" class="btn">Back to Home</a>
     </div>

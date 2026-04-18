@@ -1,10 +1,10 @@
 title: NH-Hike Adventure
 description: Welcome to NH-Hike - Your outdoor adventure starts here
 url: https://nhhike.com
-baseurl: 
+baseurl: /store
 
-show_downloads: ["true" or "false" (unquoted) to indicate whether to provide a download URL]
-google_analytics: [Your Google Analytics tracking ID]
+show_downloads: false
+google_analytics: ""
 remote_theme: pages-themes/architect@v0.2.0
 plugins:
-- jekyll-remote-theme # add this line to the plugins list if you already have one
+  - jekyll-remote-theme

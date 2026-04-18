@@ -66,17 +66,34 @@ body {
 }
 .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
 
-/* Custom cursor */
+/* Custom cursor - Compass Design */
 .cursor-dot {
-    width: 8px; height: 8px; background-color: var(--accent);
-    position: fixed; top: 0; left: 0; border-radius: 50%;
+    width: 2px; height: 16px; background-color: var(--accent);
+    position: fixed; top: 0; left: 0; border-radius: 2px;
     pointer-events: none; z-index: 9999;
+    transform: translate(-50%, -50%);
 }
+
 .cursor-outline {
-    width: 40px; height: 40px; border: 2px solid var(--accent);
+    width: 50px; height: 50px; border: 1px solid rgba(249, 168, 37, 0.4);
     position: fixed; top: 0; left: 0; border-radius: 50%;
-    pointer-events: none; z-index: 9998; transition: transform 0.1s;
+    pointer-events: none; z-index: 9998;
+    display: flex; justify-content: center; align-items: center;
+    transform: translate(-50%, -50%);
 }
+
+.cursor-outline div {
+    position: absolute; background: var(--accent);
+}
+
+.compass-n {
+    top: -12px; font-size: 8px; font-weight: 800; color: var(--accent);
+    background: transparent !important;
+}
+
+.compass-s { bottom: 0; width: 1px; height: 6px; }
+.compass-e { right: 0; width: 6px; height: 1px; }
+.compass-w { left: 0; width: 6px; height: 1px; }
 
 /* Base Responsive Elements */
 .hero-content {

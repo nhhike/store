@@ -35,31 +35,31 @@ body {
 }
 
 .glass-nav {
-    position: fixed; top: 30px; left: 50%; transform: translateX(-50%);
-    width: min(95%, 1100px); background: var(--glass); backdrop-filter: blur(15px);
-    border: 1px solid var(--glass-border); border-radius: 50px; padding: 10px 30px;
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    width: min(95%, 1100px); height: 60px;
+    background: var(--glass); backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border); border-radius: 60px; padding: 0 25px;
     display: flex; justify-content: space-between; align-items: center; z-index: 100;
 }
 
-.nav-branding { display: flex; align-items: center; gap: 15px; padding-left: 10px; }
+.nav-branding { display: flex; align-items: center; gap: 12px; height: 100%; }
 
+.nav-logo { display: flex; align-items: center; height: 100%; }
 .nav-logo img { 
-    height: 45px; width: 45px; 
-    object-fit: contain;
+    height: 60px; width: 60px; 
+    object-fit: cover;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 5px;
     transition: 0.3s; 
     border: 1px solid var(--glass-border);
 }
-.nav-logo:hover img { transform: scale(1.1); background: rgba(255, 255, 255, 0.2); }
+.nav-logo:hover img { transform: scale(1.05); }
 
 .nav-home { 
-    color: #fff; text-decoration: none; font-weight: 800; font-size: 1.1rem; 
+    color: #fff; text-decoration: none; font-weight: 800; font-size: 1rem; 
     text-transform: uppercase; letter-spacing: 1px;
 }
 
-.nav-links { display: flex !important; gap: 30px !important; }
+.nav-links { display: flex !important; gap: 20px !important; }
 .nav-links a { 
     color: #fff; text-decoration: none; font-size: 0.95rem; font-weight: 600;
     transition: 0.3s; white-space: nowrap;
@@ -131,31 +131,44 @@ body {
     padding-bottom: 50px;
 }
 
-/* Mobile Media Query */
-@media screen and (max-width: 768px) {
+/* Mobile Media Query - Portrait & Landscape */
+@media screen and (max-width: 900px) {
     .cursor-dot, .cursor-outline { display: none; }
     
-    .hero h1 { font-size: 2.8rem; line-height: 1.1; }
-    .hero p { font-size: 1rem; width: 80%; }
-    
-    .logo-top-center { top: 20px; }
-    .logo-top-center img { height: 60px; }
+    .hero { padding-top: 120px; justify-content: flex-start; }
+    .hero h1 { font-size: 2.5rem; line-height: 1.1; margin-top: 20px; }
+    .hero p { font-size: 0.95rem; width: 90%; }
     
     .glass-nav { 
-        top: 100px; 
-        padding: 10px 15px;
-        flex-direction: column;
-        gap: 10px;
-        border-radius: 20px;
-        width: 85%;
+        top: 10px; 
+        height: 50px;
+        padding: 0 10px;
+        flex-direction: row;
+        gap: 5px;
+        border-radius: 50px;
+        width: 98%;
+        justify-content: space-around;
     }
     
-    .nav-links { gap: 10px; }
-    .nav-links a { font-size: 0.8rem; }
+    .nav-branding { gap: 5px; }
+    .nav-logo img { height: 50px; width: 50px; }
+    .nav-home { font-size: 0.7rem; }
+
+    .nav-links { gap: 8px !important; }
+    .nav-links a { font-size: 0.7rem; font-weight: 700; }
     
-    .btn { padding: 10px 20px; font-size: 0.85rem; }
+    .btn { padding: 8px 12px; font-size: 0.7rem; margin-left: 5px; }
 
     .hero-footer {
         padding-bottom: 30px;
     }
+}
+
+/* Landscape orientation optimization */
+@media screen and (max-height: 500px) and (max-width: 950px) {
+    .hero { padding-top: 80px; }
+    .hero h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+    .glass-nav { top: 5px; height: 45px; }
+    .nav-logo img { height: 45px; width: 45px; }
+    .hero-footer { padding-bottom: 15px; }
 }

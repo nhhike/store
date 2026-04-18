@@ -8,36 +8,38 @@ title: App Development
         <h1>App Development</h1>
         <p>Expert mobile and web solutions tailored for your outdoor adventures.</p>
         
-        <div class="card-grid">
-            <!-- App 1: HikerLog -->
-            <div class="app-card">
-                <h3>HikerLog</h3>
-                <p>The ultimate logbook for your New Hampshire hikes. Track trails, conditions, and gear.</p>
-                <div class="app-card-links">
-                    <a href="https://github.com/nhhike/hikerlog-dev/issues" class="card-btn">
-                        <span>Report Bug (GitHub)</span>
-                    </a>
-                    <a href="https://github.com/nhhike/hikerlog-dev/blob/main/releases/HikerLog.apk?raw=true" class="card-btn primary">
-                        <span>Download APK</span>
-                    </a>
-                    <a href="https://github.com/nhhike/hikerlog-dev/blob/main/docs/HikerLog_Manual.pdf?raw=true" class="card-btn">
-                        <span>Download Documentation</span>
-                    </a>
+        <div class="main-content">
+            <div class="card-grid" style="padding-top: 0;">
+                <!-- App 1: HikerLog -->
+                <div class="app-card">
+                    <h3>HikerLog</h3>
+                    <p>The ultimate logbook for your New Hampshire hikes. Track trails, conditions, and gear.</p>
+                    <div class="app-card-links">
+                        <a href="https://github.com/nhhike/hikerlog-dev/issues" class="card-btn">
+                            <span>Report Bug (GitHub)</span>
+                        </a>
+                        <a href="https://github.com/nhhike/hikerlog-dev/blob/main/releases/HikerLog.apk?raw=true" class="card-btn primary">
+                            <span>Download APK</span>
+                        </a>
+                        <a href="https://github.com/nhhike/hikerlog-dev/blob/main/docs/HikerLog_Manual.pdf?raw=true" class="card-btn">
+                            <span>Download Documentation</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- App 2: Coming Soon -->
+                <div class="app-card">
+                    <h3>App 2</h3>
+                    <p class="coming-soon">Next adventure utility coming soon...</p>
+                    <div class="app-card-links">
+                        <button class="card-btn" disabled>Coming Soon</button>
+                    </div>
                 </div>
             </div>
 
-            <!-- App 2: Coming Soon -->
-            <div class="app-card">
-                <h3>App 2</h3>
-                <p class="coming-soon">Next adventure utility coming soon...</p>
-                <div class="app-card-links">
-                    <button class="card-btn" disabled>Coming Soon</button>
-                </div>
+            <div style="margin-top: 40px;">
+                <a href="{{ '/' | relative_url }}" class="btn">Back to Home</a>
             </div>
         </div>
-    </div>
-    
-    <div class="hero-footer">
-        <a href="{{ '/' | relative_url }}" class="btn">Back to Home</a>
     </div>
 </header>

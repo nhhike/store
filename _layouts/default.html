@@ -41,11 +41,19 @@
         window.addEventListener("mousemove", function (e) {
             const posX = e.clientX;
             const posY = e.clientY;
+            const screenWidth = window.innerWidth;
+            
+            // Calculate rotation based on X position relative to center
+            // At center: 0deg. Far left: +90deg. Far right: -90deg.
+            const rotation = ((posX - screenWidth / 2) / (screenWidth / 2)) * -90;
 
             cursorDot.style.left = `${posX}px`;
             cursorDot.style.top = `${posY}px`;
+            cursorDot.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
+
             cursorOutline.style.left = `${posX}px`;
             cursorOutline.style.top = `${posY}px`;
+            cursorOutline.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
         });
     </script>
 </body>

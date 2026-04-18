@@ -36,21 +36,20 @@ body {
 
 .glass-nav {
     position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-    width: min(95%, 1100px); height: 60px;
+    width: min(98%, 1150px); height: 70px;
     background: var(--glass); backdrop-filter: blur(15px);
-    border: 1px solid var(--glass-border); border-radius: 60px; padding: 0 25px;
+    border: 1px solid var(--glass-border); border-radius: 70px; padding: 0 35px 0 0;
     display: flex; justify-content: space-between; align-items: center; z-index: 100;
 }
 
-.nav-branding { display: flex; align-items: center; gap: 12px; height: 100%; }
+.nav-branding { display: flex; align-items: center; gap: 15px; height: 100%; }
 
 .nav-logo { display: flex; align-items: center; height: 100%; }
 .nav-logo img { 
-    height: 60px; width: 60px; 
+    height: 70px; width: 70px; 
     object-fit: cover;
     border-radius: 50%;
     transition: 0.3s; 
-    border: 1px solid var(--glass-border);
 }
 .nav-logo:hover img { transform: scale(1.05); }
 
@@ -141,23 +140,23 @@ body {
     
     .glass-nav { 
         top: 10px; 
-        height: 50px;
-        padding: 0 10px;
+        height: 46px;
+        padding: 0 10px 0 0;
         flex-direction: row;
-        gap: 5px;
+        gap: 2px;
         border-radius: 50px;
-        width: 98%;
-        justify-content: space-around;
+        width: 100%;
+        justify-content: space-between;
     }
     
-    .nav-branding { gap: 5px; }
-    .nav-logo img { height: 50px; width: 50px; }
-    .nav-home { font-size: 0.7rem; }
+    .nav-branding { gap: 4px; }
+    .nav-logo img { height: 46px; width: 46px; }
+    .nav-home { font-size: 0.65rem; font-weight: 800; }
 
-    .nav-links { gap: 8px !important; }
-    .nav-links a { font-size: 0.7rem; font-weight: 700; }
+    .nav-links { gap: 5px !important; }
+    .nav-links a { font-size: 0.58rem; font-weight: 700; letter-spacing: -0.2px; }
     
-    .btn { padding: 8px 12px; font-size: 0.7rem; margin-left: 5px; }
+    .btn { padding: 6px 10px; font-size: 0.6rem; margin-left: 2px; border-radius: 20px; }
 
     .hero-footer {
         padding-bottom: 30px;

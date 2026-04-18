@@ -1,7 +1,7 @@
 title: NH-Hike Adventure
 description: Welcome to NH-Hike - Your outdoor adventure starts here
 url: https://nhhike.com
-baseurl: /store
+baseurl: ""
 
 show_downloads: false
 google_analytics: ""

@@ -1,12 +1,52 @@
+---
+layout: default
+---
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to NH-Hike</title>
+    <title>{{ site.title }} | Explore New Hampshire</title>
+    <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
 </head>
 <body>
-    <h1>Welcome to NH-Hike!</h1>
-    <p>This is the front page of our hiking website.</p>
+    <div class="cursor-dot" data-cursor-dot></div>
+    <div class="cursor-outline" data-cursor-outline></div>
+
+    <nav class="glass-nav">
+        <a href="/" class="logo">NH-HIKE</a>
+        <div class="nav-links">
+            <a href="#trails">Trails</a>
+            <a href="#gear">Gear</a>
+            <a href="#about">About</a>
+        </div>
+        <a href="#join" class="btn">Join Adventure</a>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1>{{ site.title }}</h1>
+            <p>{{ site.description }}</p>
+            <a href="#explore" class="btn">Start Exploring</a>
+        </div>
+    </header>
+
+    <script>
+        const cursorDot = document.querySelector("[data-cursor-dot]");
+        const cursorOutline = document.querySelector("[data-cursor-outline]");
+
+        window.addEventListener("mousemove", function (e) {
+            const posX = e.clientX;
+            const posY = e.clientY;
+
+            cursorDot.style.left = `${posX}px`;
+            cursorDot.style.top = `${posY}px`;
+
+            cursorOutline.animate({
+                left: `${posX}px`,
+                top: `${posY}px`
+            }, { duration: 500, fill: "forwards" });
+        });
+    </script>
 </body>
 </html>

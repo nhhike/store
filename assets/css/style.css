@@ -167,6 +167,22 @@ body {
     background: var(--primary-light); color: #fff; 
 }
 
+.glass-content {
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 30px;
+    padding: 40px;
+    max-width: 900px;
+    margin: 40px auto;
+    text-align: left;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+}
+
+.glass-content h2 { color: var(--accent); margin-bottom: 20px; font-size: 2rem; }
+.glass-content p { margin-bottom: 20px; color: #fff; font-size: 1.1rem; line-height: 1.8; }
+.glass-content strong { color: var(--accent); font-weight: 800; }
+
 .coming-soon { opacity: 0.5; font-style: italic; }
 
 /* Base Responsive Elements */

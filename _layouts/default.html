@@ -20,27 +20,58 @@
     </div>
     {% endif %}
 
-    <nav class="glass-nav">
-        <div class="nav-branding">
-            <a href="{{ '/' | relative_url }}" class="nav-logo">
-                <img src="{{ '/assets/images/Logo.png' | relative_url }}" alt="NH-HIKE Logo">
-            </a>
-            <a href="{{ '/' | relative_url }}" class="nav-home">Home</a>
-        </div>
-        <div class="nav-links">
-            <a href="{{ '/trails.html' | relative_url }}">Trails</a>
-            <a href="{{ '/gear.html' | relative_url }}">Gear</a>
-            <a href="{{ '/essentials.html' | relative_url }}">Essentials</a>
-            <a href="{{ '/app-development.html' | relative_url }}">Downloads</a>
-            <div class="nav-dropdown">
-                <a href="#" class="dropdown-trigger">Info <i class="fa-solid fa-chevron-down"></i></a>
-                <div class="dropdown-content">
-                    <a href="{{ '/about.html' | relative_url }}">About</a>
-                    <a href="{{ '/privacy-policy.html' | relative_url }}">Privacy Policy</a>
-                </div>
+    <nav class="navbar glass-nav">
+        <div class="nav-container">
+            <div class="nav-branding">
+                <a href="{{ '/' | relative_url }}" class="nav-logo">
+                    <img src="{{ '/assets/images/Logo.png' | relative_url }}" alt="NH-HIKE Logo">
+                </a>
+                <a href="{{ '/' | relative_url }}" class="nav-home">Home</a>
+            </div>
+
+            <!-- Desktop Menu -->
+            <ul class="nav-menu" id="desktop-menu">
+                <li class="nav-item"><a href="{{ '/trails.html' | relative_url }}" class="nav-link">Trails</a></li>
+                <li class="nav-item"><a href="{{ '/gear.html' | relative_url }}" class="nav-link">Gear</a></li>
+                <li class="nav-item"><a href="{{ '/essentials.html' | relative_url }}" class="nav-link">Essentials</a></li>
+                <li class="nav-item"><a href="{{ '/app-development.html' | relative_url }}" class="nav-link">Downloads</a></li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link dropdown-toggle">Info <i class="fa-solid fa-chevron-down"></i></a>
+                    <div class="dropdown">
+                        <a href="{{ '/about.html' | relative_url }}">About</a>
+                        <a href="{{ '/privacy-policy.html' | relative_url }}">Privacy Policy</a>
+                    </div>
+                </li>
+                <li class="nav-item no-border">
+                    <a href="{{ '/join.html' | relative_url }}" class="btn">Join Adventure</a>
+                </li>
+            </ul>
+
+            <!-- Hamburger Button -->
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
         </div>
-        <a href="{{ '/join.html' | relative_url }}" class="btn">Join Adventure</a>
+
+        <!-- Mobile Menu -->
+        <div class="mobile-menu" id="mobile-menu">
+            <ul class="mobile-nav">
+                <li class="mobile-item"><a href="{{ '/trails.html' | relative_url }}" class="mobile-link">Trails</a></li>
+                <li class="mobile-item"><a href="{{ '/gear.html' | relative_url }}" class="mobile-link">Gear</a></li>
+                <li class="mobile-item"><a href="{{ '/essentials.html' | relative_url }}" class="mobile-link">Essentials</a></li>
+                <li class="mobile-item"><a href="{{ '/app-development.html' | relative_url }}" class="mobile-link">Downloads</a></li>
+                <li class="mobile-item">
+                    <a href="#" class="mobile-link dropdown-toggle">Info <i class="fa-solid fa-chevron-down"></i></a>
+                    <div class="mobile-dropdown">
+                        <a href="{{ '/about.html' | relative_url }}">About</a>
+                        <a href="{{ '/privacy-policy.html' | relative_url }}">Privacy Policy</a>
+                    </div>
+                </li>
+                <li class="mobile-item no-border"><a href="{{ '/join.html' | relative_url }}" class="mobile-link">Join Adventure</a></li>
+            </ul>
+        </div>
     </nav>
 
     {{ content }}
@@ -48,27 +79,91 @@
     {% if page.url == "/" or page.url == "/index" or page.url == "/index.html" %}
 
     <script>
+        // Navigation Logic - Click-to-Open
+        document.addEventListener('DOMContentLoaded', () => {
+            const hamburger = document.getElementById('hamburger');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const desktopItems = document.querySelectorAll('#desktop-menu .nav-item');
+            const mobileToggles = document.querySelectorAll('.mobile-link.dropdown-toggle');
+
+            // Desktop Toggle
+            desktopItems.forEach(item => {
+                const toggle = item.querySelector('.dropdown-toggle');
+                if (!toggle) return;
+
+                toggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const isActive = item.classList.contains('active');
+                    desktopItems.forEach(other => other.classList.remove('active'));
+                    if (!isActive) item.classList.add('active');
+                });
+            });
+
+            // Mobile Menu Toggle
+            hamburger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                mobileMenu.classList.toggle('open');
+                hamburger.classList.toggle('active');
+            });
+
+            // Mobile Dropdown Toggle
+            mobileToggles.forEach(toggle => {
+                toggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const dropdown = toggle.nextElementSibling;
+                    const isOpen = dropdown.classList.contains('open');
+                    
+                    document.querySelectorAll('.mobile-dropdown').forEach(dd => dd.classList.remove('open'));
+                    if (!isOpen) dropdown.classList.add('open');
+                });
+            });
+
+            // Close everything on outside click
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.navbar')) {
+                    desktopItems.forEach(item => item.classList.remove('active'));
+                    mobileMenu.classList.remove('open');
+                    hamburger.classList.remove('active');
+                }
+            });
+
+            // Escape key support
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    desktopItems.forEach(item => item.classList.remove('active'));
+                    mobileMenu.classList.remove('open');
+                    hamburger.classList.remove('active');
+                }
+            });
+        });
+
+        // Compass Cursor Logic
         const cursorDot = document.querySelector("[data-cursor-dot]");
         const cursorOutline = document.querySelector("[data-cursor-outline]");
 
-        window.addEventListener("mousemove", function (e) {
-            cursorDot.style.opacity = "1";
-            cursorOutline.style.opacity = "1";
+        if (cursorDot && cursorOutline) {
+            window.addEventListener("mousemove", function (e) {
+                cursorDot.style.opacity = "1";
+                cursorOutline.style.opacity = "1";
 
-            const posX = e.clientX;
-            const posY = e.clientY;
-            const screenWidth = window.innerWidth;
-            
-            const rotation = ((posX - screenWidth / 2) / (screenWidth / 2)) * -90;
+                const posX = e.clientX;
+                const posY = e.clientY;
+                const screenWidth = window.innerWidth;
+                
+                const rotation = ((posX - screenWidth / 2) / (screenWidth / 2)) * -90;
 
-            cursorDot.style.left = `${posX}px`;
-            cursorDot.style.top = `${posY}px`;
-            cursorDot.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
+                cursorDot.style.left = `${posX}px`;
+                cursorDot.style.top = `${posY}px`;
+                cursorDot.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
 
-            cursorOutline.style.left = `${posX}px`;
-            cursorOutline.style.top = `${posY}px`;
-            cursorOutline.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
-        });
+                cursorOutline.style.left = `${posX}px`;
+                cursorOutline.style.top = `${posY}px`;
+                cursorOutline.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
+            });
+        }
     </script>
     {% endif %}
 </body>

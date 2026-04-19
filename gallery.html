@@ -3,6 +3,12 @@ layout: default
 title: Gallery
 ---
 
+<!-- 
+    DYNAMIC GALLERY SYSTEM
+    This implementation is 100% client-side and dynamic. 
+    It fetches live data from Google Drive.
+-->
+
 <section class="hero" style="min-height: 200px; padding-top: 120px;">
     <div class="hero-content">
         <h1>Gallery</h1>
@@ -15,8 +21,12 @@ title: Gallery
     <div class="glass-content" style="margin-bottom: 30px; text-align: center;">
         <h3 style="color: var(--accent); margin-bottom: 20px;">Select a Collection</h3>
         <select id="gallery-picker" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--glass-border); padding: 12px 25px; border-radius: 30px; font-family: 'Inter', sans-serif; cursor: pointer; outline: none; width: min(100%, 400px);">
-            <option value="" disabled selected>Loading collections...</option>
+            <option value="" disabled selected>Connecting to Drive...</option>
         </select>
+        <div id="api-notice" style="display: none; margin-top: 15px; font-size: 0.8rem; color: var(--accent);">
+            <i class="fa-solid fa-triangle-exclamation"></i> API Key required for live updates. 
+            <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color: #fff;">Get one here</a>.
+        </div>
     </div>
 
     <!-- Description Area -->
@@ -25,189 +35,186 @@ title: Gallery
     </div>
 
     <!-- Gallery Items Grid -->
-    <div id="gallery-grid" class="card-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; padding: 0;">
-        <!-- Thumbnails populated here -->
+    <div id="gallery-grid" class="card-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 0;">
+        <!-- Dynamic content -->
     </div>
 
     <!-- Media Modal -->
     <div id="media-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
         <span id="close-modal" style="position: absolute; top: 30px; right: 40px; color: #fff; font-size: 40px; cursor: pointer;">&times;</span>
-        <div id="modal-content" style="max-width: 90%; max-height: 90%; display: flex; align-items: center; justify-content: center;">
-            <!-- Large Image or Video Embed -->
-        </div>
+        <div id="modal-content" style="max-width: 90%; max-height: 90%; display: flex; align-items: center; justify-content: center;"></div>
         <div id="modal-caption" style="position: absolute; bottom: 30px; color: #fff; font-family: 'Inter', sans-serif; background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 20px;"></div>
     </div>
 </div>
 
+<!-- Marked.js for Markdown parsing if .md files are found -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
 <script>
-    const galleryData = {
-        "folders": [
-            {
-                "name": "Kelly St - Piscataqua River",
-                "id": "1ZzT5dVjcy9gklfEjSG6Uw9tOWkqUWRpG",
-                "files": [
-                    {"name": "Kelly St View", "id": "1WSmcXKdC4nQshTYk9v95Acb3AVu4zwA6", "type": "Image"}
-                ],
-                "description": "Scenic views alongside the Piscataqua River from Kelly Street."
-            },
-            {
-                "name": "Little Massebesic",
-                "id": "1iQe7f-OgLhB44a9Q8TMTgjGAuBAYT5pQ",
-                "files": [
-                    {"name": "Little Massebesic 1", "id": "1bvZx3yg1exsVufrVziBW4QCiQNCk53gU", "type": "Image"},
-                    {"name": "Little Massebesic 2", "id": "1-aaMPKmmrCkxMZnsdcQUrycSVomdaP6U", "type": "Image"}
-                ],
-                "description": "A quiet explore around the Little Massebesic lake trails."
-            },
-            {
-                "name": "Champney Falls",
-                "id": "1LSQTpBa5o9USKR4WVHOD3fTvkJH9Lb3z",
-                "files": [
-                    {"name": "Champney Falls", "id": "174m8P0VvAfi8jlAxvYaWJpSS7lzU3su6", "type": "Image"}
-                ],
-                "description": "The frozen beauty of Champney Falls on the way to Chocorua."
-            },
-            {
-                "name": "Depot Road - Clarks Pond",
-                "id": "1_zp0wZvM1f1fqfau6rjYRKHySlpoBJqI",
-                "files": [
-                    {"name": "Depot Road View", "id": "1N-VwpJJrtZ50CBIAtWwjTpJyRZeieiX-", "type": "Image"}
-                ],
-                "description": "Nature paths and pond views accessible from Depot Road."
-            },
-            {
-                "name": "Mt Cardigan",
-                "id": "1ZTyMTaHyzZve98WAeWoZLF0nKo9F4ze1",
-                "files": [
-                    {"name": "Cardigan Terrain", "id": "1hYvzSFM2R4PhfiBLaTHcqoSK3C4Yxfjq", "type": "Image"},
-                    {"name": "Cardigan Summit View", "id": "1c3HaLCy4tti6YtIT7R5JQ7r2yNbewTow", "type": "Video"}
-                ],
-                "description": "Wide granite balds and 360-degree views from the summit of Mt Cardigan."
-            },
-            {
-                "name": "Falling Waters",
-                "id": "126ujSkerHxsew6nJTzzUrKtuJWh4Pcx9",
-                "files": [
-                    {"name": "Trail Map", "id": "1Ehdxm99Ep1QHE9iqFPvT_K2q5f2ohdG-", "type": "Image"}
-                ],
-                "description": "One of the most scenic trails in the White Mountains, featuring multiple waterfalls."
-            },
-             {
-                "name": "Mount Belknap",
-                "id": "1PIpKQRA0o4gj-pnb8ef9X0Oo-Au4qfTo",
-                "files": [
-                    {"name": "Belknap Panorama", "id": "1gFA--zkiriNzuD2HWIINyzxxwiNru8QQ", "type": "Video"}
-                ],
-                "description": "Aerial and ground views of the Belknap range near Lake Winnipesaukee."
-            }
-        ]
-    };
+    /**
+     * CONFIGURATION
+     * Replace API_KEY with your Google Cloud API Key.
+     * Ensure the Drive API is enabled and the root folder is shared as 'Public' or 'Anyone with link'.
+     */
+    const API_KEY = ''; // ADD YOUR API KEY HERE
+    const ROOT_ID = '1EfIJvPEiJp48qs55RYypFcFHTJHGjqCX';
+
+    const picker = document.getElementById('gallery-picker');
+    const grid = document.getElementById('gallery-grid');
+    const descArea = document.getElementById('gallery-description');
+    const modal = document.getElementById('media-modal');
+    const modalContent = document.getElementById('modal-content');
+    const modalCaption = document.getElementById('modal-caption');
+    const closeModal = document.getElementById('close-modal');
 
     document.addEventListener('DOMContentLoaded', () => {
-        const picker = document.getElementById('gallery-picker');
-        const grid = document.getElementById('gallery-grid');
-        const descArea = document.getElementById('gallery-description');
-        const modal = document.getElementById('media-modal');
-        const modalContent = document.getElementById('modal-content');
-        const modalCaption = document.getElementById('modal-caption');
-        const closeModal = document.getElementById('close-modal');
+        if (!API_KEY) {
+            document.getElementById('api-notice').style.display = 'block';
+            picker.innerHTML = '<option value="" disabled selected>API Key missing in gallery.html</option>';
+            return;
+        }
+        initGallery();
+    });
 
-        // Populate Picker
-        picker.innerHTML = '<option value="" disabled selected>-- Select a Gallery --</option>';
-        galleryData.folders.forEach((folder, index) => {
-            const option = document.createElement('option');
-            option.value = index;
-            option.textContent = folder.name;
-            picker.appendChild(option);
-        });
+    async function initGallery() {
+        try {
+            const url = `https://www.googleapis.com/drive/v3/files?q='${ROOT_ID}'+in+parents+and+mimeType='application/vnd.google-apps.folder'+and+trashed=false&fields=files(id,name)&key=${API_KEY}`;
+            const response = await fetch(url);
+            const data = await response.json();
 
-        // Handle Change
-        picker.addEventListener('change', (e) => {
-            const folder = galleryData.folders[e.target.value];
-            loadGallery(folder);
-        });
+            if (data.error) throw new Error(data.error.message);
 
-        function loadGallery(folder) {
-            grid.innerHTML = '';
-            
-            // Show Description
-            if (folder.description) {
-                descArea.innerHTML = `<p style="font-size: 1.1rem; line-height: 1.6;">${folder.description}</p>`;
-                descArea.style.display = 'block';
-            } else {
-                descArea.style.display = 'none';
-            }
-
-            // Populate Grid
-            folder.files.forEach(file => {
-                const card = document.createElement('div');
-                card.className = 'app-card';
-                card.style.padding = '0';
-                card.style.overflow = 'hidden';
-                card.style.cursor = 'pointer';
-
-                let thumbUrl;
-                if (file.type === 'Image') {
-                    thumbUrl = `https://lh3.googleusercontent.com/d/${file.id}=s400`;
-                } else if (file.type === 'Video') {
-                    thumbUrl = `https://lh3.googleusercontent.com/d/${file.id}=s400`; // Drive creates thumbs for videos too
-                }
-
-                card.innerHTML = `
-                    <div style="position: relative; width: 100%; aspect-ratio: 16/9; background: #000;">
-                        <img src="${thumbUrl}" alt="${file.name}" style="width: 100%; height: 100%; object-fit: cover; transition: 0.5s;">
-                        ${file.type === 'Video' ? '<i class="fa-solid fa-play" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; font-size: 2rem; text-shadow: 0 0 10px rgba(0,0,0,0.8);"></i>' : ''}
-                        <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 15px; background: linear-gradient(transparent, rgba(0,0,0,0.8));">
-                            <span style="font-size: 0.85rem; font-weight: 600;">${file.name}</span>
-                        </div>
-                    </div>
-                `;
-
-                card.addEventListener('mouseenter', () => { card.querySelector('img').style.transform = 'scale(1.1)'; });
-                card.addEventListener('mouseleave', () => { card.querySelector('img').style.transform = 'scale(1)'; });
-                
-                card.addEventListener('click', () => {
-                    openMedia(file);
-                });
-
-                grid.appendChild(card);
+            picker.innerHTML = '<option value="" disabled selected>-- Select a Gallery --</option>';
+            data.files.sort((a, b) => a.name.localeCompare(b.name)).forEach(folder => {
+                const option = document.createElement('option');
+                option.value = folder.id;
+                option.textContent = folder.name;
+                picker.appendChild(option);
             });
-        }
 
-        function openMedia(file) {
-            modalContent.innerHTML = '';
-            modalCaption.textContent = file.name;
+            picker.addEventListener('change', (e) => loadFolder(e.target.value));
+
+        } catch (err) {
+            console.error('Drive Error:', err);
+            picker.innerHTML = `<option disabled selected>Error: ${err.message}</option>`;
+        }
+    }
+
+    async function loadFolder(folderId) {
+        grid.innerHTML = '<div style="text-align: center; width: 100%; grid-column: 1/-1;"><i class="fa-solid fa-spinner fa-spin"></i> Loading assets...</div>';
+        descArea.style.display = 'none';
+        
+        try {
+            // Fetch all files in the folder (images, videos, and potential .md)
+            const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,webContentLink)&key=${API_KEY}`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            const files = data.files;
             
-            if (file.type === 'Image') {
-                const img = document.createElement('img');
-                img.src = `https://lh3.googleusercontent.com/d/${file.id}=s0`;
-                img.style.maxWidth = '100%';
-                img.style.maxHeight = '100%';
-                img.style.borderRadius = '10px';
-                modalContent.appendChild(img);
-            } else if (file.type === 'Video') {
-                const iframe = document.createElement('iframe');
-                iframe.src = `https://drive.google.com/file/d/${file.id}/preview`;
-                iframe.width = '800';
-                iframe.height = '450';
-                iframe.style.border = 'none';
-                iframe.setAttribute('allow', 'autoplay');
-                modalContent.appendChild(iframe);
+            // 1. Handle Markdown Description
+            const mdFile = files.find(f => f.name.endsWith('.md'));
+            if (mdFile) {
+                const contentUrl = `https://www.googleapis.com/drive/v3/files/${mdFile.id}?alt=media&key=${API_KEY}`;
+                const mdResponse = await fetch(contentUrl);
+                const mdText = await mdResponse.text();
+                descArea.innerHTML = marked.parse(mdText);
+                descArea.style.display = 'block';
             }
 
-            modal.style.display = 'flex';
+            // 2. Filter images and videos
+            const media = files.filter(f => f.mimeType.startsWith('image/') || f.mimeType.startsWith('video/'));
+            
+            grid.innerHTML = '';
+            if (media.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; width: 100%; grid-column: 1/-1;">No media found in this folder.</p>';
+                return;
+            }
+
+            media.sort((a, b) => a.name.localeCompare(b.name)).forEach(file => {
+                renderMediaCard(file);
+            });
+
+        } catch (err) {
+            grid.innerHTML = `<p style="color: red;">Error loading folder: ${err.message}</p>`;
+        }
+    }
+
+    function renderMediaCard(file) {
+        const isVideo = file.mimeType.startsWith('video/');
+        const card = document.createElement('div');
+        card.className = 'app-card';
+        card.style.padding = '0';
+        card.style.overflow = 'hidden';
+        card.style.cursor = 'pointer';
+
+        // Thumbnail link for Drive images/videos
+        const thumbUrl = `https://lh3.googleusercontent.com/d/${file.id}=s400`;
+
+        card.innerHTML = `
+            <div style="position: relative; width: 100%; aspect-ratio: 1/1; background: rgba(0,0,0,0.2);">
+                <img src="${thumbUrl}" alt="${file.name}" style="width: 100%; height: 100%; object-fit: cover; transition: 0.5s;">
+                ${isVideo ? '<i class="fa-solid fa-play" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; font-size: 2rem; opacity: 0.8;"></i>' : ''}
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 12px; background: linear-gradient(transparent, rgba(0,0,0,0.7)); opacity: 0; transition: 0.3s;" class="card-label">
+                    <span style="font-size: 0.75rem; color: #fff;">${file.name}</span>
+                </div>
+            </div>
+        `;
+
+        card.addEventListener('mouseenter', () => { 
+            card.querySelector('img').style.transform = 'scale(1.1)'; 
+            card.querySelector('.card-label').style.opacity = '1';
+        });
+        card.addEventListener('mouseleave', () => { 
+            card.querySelector('img').style.transform = 'scale(1)'; 
+            card.querySelector('.card-label').style.opacity = '0';
+        });
+
+        card.addEventListener('click', () => openMedia(file));
+        grid.appendChild(card);
+    }
+
+    function openMedia(file) {
+        modalContent.innerHTML = '';
+        modalCaption.textContent = file.name;
+        
+        if (file.mimeType.startsWith('image/')) {
+            const img = document.createElement('img');
+            img.src = `https://lh3.googleusercontent.com/d/${file.id}=s0`; // Original size
+            img.style.maxWidth = '100%';
+            img.style.maxHeight = '100%';
+            img.style.borderRadius = '10px';
+            modalContent.appendChild(img);
+        } else if (file.mimeType.startsWith('video/')) {
+            const iframe = document.createElement('iframe');
+            iframe.src = `https://drive.google.com/file/d/${file.id}/preview`;
+            iframe.width = '800';
+            iframe.height = '450';
+            iframe.style.border = 'none';
+            iframe.setAttribute('allow', 'autoplay');
+            modalContent.appendChild(iframe);
         }
 
-        closeModal.addEventListener('click', () => {
+        modal.style.display = 'flex';
+    }
+
+    closeModal.addEventListener('click', () => {
+        modal.style.display = 'none';
+        modalContent.innerHTML = '';
+    });
+
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) {
             modal.style.display = 'none';
             modalContent.innerHTML = '';
-        });
+        }
+    });
 
-        window.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.style.display = 'none';
-                modalContent.innerHTML = '';
-            }
-        });
+    // Handle Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.style.display === 'flex') {
+            modal.style.display = 'none';
+            modalContent.innerHTML = '';
+        }
     });
 </script>

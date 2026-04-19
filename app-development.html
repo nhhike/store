@@ -5,8 +5,8 @@ title: App Development
 
 <header class="hero">
     <div class="hero-content">
-        <h1>App Development</h1>
-        <p>Expert mobile and web solutions tailored for your outdoor adventures.</p>
+        <h1>Downloads</h1>
+        <p>Expert software solutions tailored for your outdoor adventures.</p>
 
         <div class="main-content">
             <div class="card-grid" style="padding-top: 0;">
@@ -16,7 +16,8 @@ title: App Development
                     <p>The ultimate Android logbook for listing, finding and tracking your New Hampshire hikes.</p>
                     <div class="app-card-links">
                         <a href="https://github.com/nhhike/hikerlog-dev/issues" class="card-btn">
-                            <span>Report Bug (GitHub) <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.75rem; margin-left: 5px;"></i></span>
+                            <span>Report Bug (GitHub) <i class="fa-solid fa-arrow-up-right-from-square"
+                                    style="font-size: 0.75rem; margin-left: 5px;"></i></span>
                         </a>
                         <a href="{{ '/disclaimer.html' | relative_url }}?url=https%3A%2F%2Fgithub.com%2Fnhhike%2Fhikerlog-dev%2Fblob%2Fmain%2Freleases%2FHikerLog.apk%3Fraw%3Dtrue"
                             class="card-btn primary">
@@ -26,19 +27,21 @@ title: App Development
                             class="card-btn">
                             <span><i class="fa-solid fa-file-pdf"></i> Documentation</span>
                         </a>
-                        <div id="donate-button-container" style="display: flex; justify-content: center; margin-top: 5px;">
+                        <div id="donate-button-container"
+                            style="display: flex; justify-content: center; margin-top: 5px;">
                             <div id="donate-button"></div>
-                            <script src="https://www.paypalobjects.com/donate/sdk/donate-sdk.js" charset="UTF-8"></script>
+                            <script src="https://www.paypalobjects.com/donate/sdk/donate-sdk.js"
+                                charset="UTF-8"></script>
                             <script>
-                            PayPal.Donation.Button({
-                            env:'production',
-                            hosted_button_id:'YBMDUG8SPQFQ4',
-                            image: {
-                            src:'https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif',
-                            alt:'Donate with PayPal button',
-                            title:'PayPal - The safer, easier way to pay online!',
-                            }
-                            }).render('#donate-button');
+                                PayPal.Donation.Button({
+                                    env: 'production',
+                                    hosted_button_id: 'YBMDUG8SPQFQ4',
+                                    image: {
+                                        src: 'https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif',
+                                        alt: 'Donate with PayPal button',
+                                        title: 'PayPal - The safer, easier way to pay online!',
+                                    }
+                                }).render('#donate-button');
                             </script>
                         </div>
                     </div>

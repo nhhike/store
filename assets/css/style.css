@@ -61,8 +61,11 @@ body {
 
 .nav-links { display: flex !important; gap: 20px !important; }
 .nav-links a { 
-    color: #fff; text-decoration: none; font-size: 0.95rem; font-weight: 600;
+    color: #fff; text-decoration: none; font-size: 0.95rem; font-weight: 300;
+    font-family: 'Inter', sans-serif;
     transition: 0.3s; white-space: nowrap;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 .nav-links a:hover { color: var(--accent); }
 
@@ -230,7 +233,7 @@ body {
     .nav-home { font-size: 0.65rem; font-weight: 800; }
 
     .nav-links { gap: 5px !important; }
-    .nav-links a { font-size: 0.58rem; font-weight: 700; letter-spacing: -0.2px; }
+    .nav-links a { font-size: 0.58rem; font-weight: 200; letter-spacing: 0.2px; }
     
     .btn { padding: 6px 10px; font-size: 0.6rem; margin-left: 2px; border-radius: 20px; }
 

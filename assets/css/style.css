@@ -69,6 +69,66 @@ body {
 }
 .nav-links a:hover { color: var(--accent); }
 
+/* Dropdown Support */
+.nav-dropdown {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.dropdown-trigger {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.dropdown-trigger i {
+    font-size: 0.6rem;
+    transition: 0.3s;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    min-width: 180px;
+    border-radius: 20px;
+    z-index: 1000;
+    margin-top: 15px;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+    padding: 10px 0;
+}
+
+.dropdown-content a {
+    padding: 12px 20px !important;
+    display: block !important;
+    font-size: 0.85rem !important;
+    font-weight: 400 !important;
+    text-transform: none !important;
+    letter-spacing: 0.3px !important;
+    width: 100%;
+}
+
+.dropdown-content a:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--accent);
+}
+
+.nav-dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.nav-dropdown:hover .dropdown-trigger i {
+    transform: rotate(180deg);
+}
+
 .btn {
     padding: 12px 30px; background: var(--primary); color: #fff;
     text-decoration: none; border-radius: 30px; font-weight: 600;
@@ -232,9 +292,18 @@ body {
     .nav-logo img { height: 46px; width: 46px; }
     .nav-home { font-size: 0.65rem; font-weight: 800; }
 
-    .nav-links { gap: 5px !important; }
+    .nav-links { gap: 5px !important; align-items: center; }
     .nav-links a { font-size: 0.58rem; font-weight: 200; letter-spacing: 0.2px; }
     
+    .nav-dropdown .dropdown-content {
+        position: fixed;
+        top: 60px;
+        left: auto;
+        right: 10px;
+        transform: none;
+        min-width: 140px;
+    }
+
     .btn { padding: 6px 10px; font-size: 0.6rem; margin-left: 2px; border-radius: 20px; }
 
     .hero-footer {

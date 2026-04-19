@@ -46,26 +46,33 @@ title: Gallery
     <div id="media-modal"
         style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
         <span id="close-modal"
-            style="position: absolute; top: 30px; right: 40px; color: #fff; font-size: 40px; cursor: pointer;">&times;</span>
+            style="position: absolute; top: 30px; right: 40px; color: #fff; font-size: 40px; cursor: pointer; z-index: 2001;">&times;</span>
+        
+        <!-- Navigation Arrows -->
+        <div id="prev-media" style="position: absolute; left: 30px; top: 50%; transform: translateY(-50%); color: #fff; font-size: 50px; cursor: pointer; z-index: 2001; opacity: 0.7; transition: 0.3s; padding: 20px;">
+            <i class="fa-solid fa-chevron-left"></i>
+        </div>
+        <div id="next-media" style="position: absolute; right: 30px; top: 50%; transform: translateY(-50%); color: #fff; font-size: 50px; cursor: pointer; z-index: 2001; opacity: 0.7; transition: 0.3s; padding: 20px;">
+            <i class="fa-solid fa-chevron-right"></i>
+        </div>
+
         <div id="modal-content"
-            style="max-width: 90%; max-height: 90%; display: flex; align-items: center; justify-content: center;"></div>
+            style="max-width: 85%; max-height: 85%; display: flex; align-items: center; justify-content: center;"></div>
         <div id="modal-caption"
             style="position: absolute; bottom: 30px; color: #fff; font-family: 'Inter', sans-serif; background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 20px;">
         </div>
     </div>
 </div>
 
-<!-- Marked.js for Markdown parsing if .md files are found -->
+<!-- Marked.js for Markdown parsing -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <script>
-    /**
-     * CONFIGURATION
-     * Replace API_KEY with your Google Cloud API Key.
-     * Ensure the Drive API is enabled and the root folder is shared as 'Public' or 'Anyone with link'.
-     */
-    const API_KEY = 'AIzaSyB4KXMciiR9YisJ_1M2C5-EiiyeFJPWSlw'; // ADD YOUR API KEY HERE
+    const API_KEY = 'AIzaSyB4KXMciiR9YisJ_1M2C5-EiiyeFJPWSlw'; 
     const ROOT_ID = '1EfIJvPEiJp48qs55RYypFcFHTJHGjqCX';
+
+    let currentMediaList = [];
+    let currentIndex = 0;
 
     const picker = document.getElementById('gallery-picker');
     const grid = document.getElementById('gallery-grid');
@@ -74,6 +81,8 @@ title: Gallery
     const modalContent = document.getElementById('modal-content');
     const modalCaption = document.getElementById('modal-caption');
     const closeModal = document.getElementById('close-modal');
+    const prevBtn = document.getElementById('prev-media');
+    const nextBtn = document.getElementById('next-media');
 
     document.addEventListener('DOMContentLoaded', () => {
         if (!API_KEY) {
@@ -86,7 +95,6 @@ title: Gallery
 
     async function initGallery() {
         try {
-            // Broaden search to find folders and shortcuts
             const url = `https://www.googleapis.com/drive/v3/files?q='${ROOT_ID}'+in+parents+and+trashed=false&fields=files(id,name,mimeType)&key=${API_KEY}`;
             const response = await fetch(url);
             const data = await response.json();
@@ -96,16 +104,13 @@ title: Gallery
                 throw new Error(data.error.message);
             }
 
-            // Filter for folders or shortcuts to folders
             const folders = data.files.filter(f => 
                 f.mimeType === 'application/vnd.google-apps.folder' || 
                 f.mimeType === 'application/vnd.google-apps.shortcut'
             );
 
-            console.log('Found Folders:', folders);
-
             if (folders.length === 0) {
-                picker.innerHTML = '<option value="" disabled selected>No subfolders found in root.</option>';
+                picker.innerHTML = '<option value="" disabled selected style="background: #1e293b; color: #fff;">No subfolders found in root.</option>';
                 return;
             }
 
@@ -133,16 +138,15 @@ title: Gallery
     async function loadFolder(folderId) {
         grid.innerHTML = '<div style="text-align: center; width: 100%; grid-column: 1/-1;"><i class="fa-solid fa-spinner fa-spin"></i> Loading assets...</div>';
         descArea.style.display = 'none';
-
+        currentMediaList = [];
+        
         try {
-            // Fetch all files in the folder (images, videos, and potential .md)
             const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,webContentLink)&key=${API_KEY}`;
             const response = await fetch(url);
             const data = await response.json();
 
             const files = data.files;
-
-            // 1. Handle Markdown Description
+            
             const mdFile = files.find(f => f.name.endsWith('.md'));
             if (mdFile) {
                 const contentUrl = `https://www.googleapis.com/drive/v3/files/${mdFile.id}?alt=media&key=${API_KEY}`;
@@ -152,17 +156,17 @@ title: Gallery
                 descArea.style.display = 'block';
             }
 
-            // 2. Filter images and videos
-            const media = files.filter(f => f.mimeType.startsWith('image/') || f.mimeType.startsWith('video/'));
-
+            currentMediaList = files.filter(f => f.mimeType.startsWith('image/') || f.mimeType.startsWith('video/'))
+                                  .sort((a, b) => a.name.localeCompare(b.name));
+            
             grid.innerHTML = '';
-            if (media.length === 0) {
+            if (currentMediaList.length === 0) {
                 grid.innerHTML = '<p style="text-align: center; width: 100%; grid-column: 1/-1;">No media found in this folder.</p>';
                 return;
             }
 
-            media.sort((a, b) => a.name.localeCompare(b.name)).forEach(file => {
-                renderMediaCard(file);
+            currentMediaList.forEach((file, index) => {
+                renderMediaCard(file, index);
             });
 
         } catch (err) {
@@ -170,7 +174,7 @@ title: Gallery
         }
     }
 
-    function renderMediaCard(file) {
+    function renderMediaCard(file, index) {
         const isVideo = file.mimeType.startsWith('video/');
         const card = document.createElement('div');
         card.className = 'app-card';
@@ -178,42 +182,44 @@ title: Gallery
         card.style.overflow = 'hidden';
         card.style.cursor = 'pointer';
 
-        // Thumbnail link for Drive images/videos
         const thumbUrl = `https://lh3.googleusercontent.com/d/${file.id}=s400`;
 
         card.innerHTML = `
-            <div style="position: relative; width: 100%; aspect-ratio: 1/1; background: rgba(0,0,0,0.2);">
+            <div style="position: relative; width: 100%; aspect-ratio: 1/1; background: rgba(0,0,0,0.1);">
                 <img src="${thumbUrl}" alt="${file.name}" style="width: 100%; height: 100%; object-fit: cover; transition: 0.5s;">
-                ${isVideo ? '<i class="fa-solid fa-play" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; font-size: 2rem; opacity: 0.8;"></i>' : ''}
-                <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 12px; background: linear-gradient(transparent, rgba(0,0,0,0.7)); opacity: 0; transition: 0.3s;" class="card-label">
-                    <span style="font-size: 0.75rem; color: #fff;">${file.name}</span>
+                ${isVideo ? '<i class="fa-solid fa-play" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; font-size: 1.5rem; opacity: 0.8;"></i>' : ''}
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 10px; background: rgba(0,0,0,0.5); opacity: 0; transition: 0.3s;" class="card-label">
+                    <span style="font-size: 0.7rem; color: #fff;">${file.name}</span>
                 </div>
             </div>
         `;
 
-        card.addEventListener('mouseenter', () => {
-            card.querySelector('img').style.transform = 'scale(1.1)';
+        card.addEventListener('mouseenter', () => { 
+            card.querySelector('img').style.transform = 'scale(1.1)'; 
             card.querySelector('.card-label').style.opacity = '1';
         });
-        card.addEventListener('mouseleave', () => {
-            card.querySelector('img').style.transform = 'scale(1)';
+        card.addEventListener('mouseleave', () => { 
+            card.querySelector('img').style.transform = 'scale(1)'; 
             card.querySelector('.card-label').style.opacity = '0';
         });
 
-        card.addEventListener('click', () => openMedia(file));
+        card.addEventListener('click', () => {
+            currentIndex = index;
+            openMedia(file);
+        });
         grid.appendChild(card);
     }
 
     function openMedia(file) {
         modalContent.innerHTML = '';
         modalCaption.textContent = file.name;
-
+        
         if (file.mimeType.startsWith('image/')) {
             const img = document.createElement('img');
-            img.src = `https://lh3.googleusercontent.com/d/${file.id}=s0`; // Original size
+            img.src = `https://lh3.googleusercontent.com/d/${file.id}=s0`;
             img.style.maxWidth = '100%';
             img.style.maxHeight = '100%';
-            img.style.borderRadius = '10px';
+            img.style.borderRadius = '8px';
             modalContent.appendChild(img);
         } else if (file.mimeType.startsWith('video/')) {
             const iframe = document.createElement('iframe');
@@ -228,6 +234,24 @@ title: Gallery
         modal.style.display = 'flex';
     }
 
+    function showPrev() {
+        currentIndex = (currentIndex - 1 + currentMediaList.length) % currentMediaList.length;
+        openMedia(currentMediaList[currentIndex]);
+    }
+
+    function showNext() {
+        currentIndex = (currentIndex + 1) % currentMediaList.length;
+        openMedia(currentMediaList[currentIndex]);
+    }
+
+    prevBtn.addEventListener('click', (e) => { e.stopPropagation(); showPrev(); });
+    nextBtn.addEventListener('click', (e) => { e.stopPropagation(); showNext(); });
+
+    prevBtn.addEventListener('mouseenter', () => { prevBtn.style.opacity = '1'; });
+    prevBtn.addEventListener('mouseleave', () => { prevBtn.style.opacity = '0.7'; });
+    nextBtn.addEventListener('mouseenter', () => { nextBtn.style.opacity = '1'; });
+    nextBtn.addEventListener('mouseleave', () => { nextBtn.style.opacity = '0.7'; });
+
     closeModal.addEventListener('click', () => {
         modal.style.display = 'none';
         modalContent.innerHTML = '';
@@ -240,11 +264,16 @@ title: Gallery
         }
     });
 
-    // Handle Escape key
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal.style.display === 'flex') {
-            modal.style.display = 'none';
-            modalContent.innerHTML = '';
+        if (modal.style.display === 'flex') {
+            if (e.key === 'Escape') {
+                modal.style.display = 'none';
+                modalContent.innerHTML = '';
+            } else if (e.key === 'ArrowLeft') {
+                showPrev();
+            } else if (e.key === 'ArrowRight') {
+                showNext();
+            }
         }
     });
 </script>

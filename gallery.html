@@ -90,7 +90,15 @@ title: Gallery
             const response = await fetch(url);
             const data = await response.json();
 
-            if (data.error) throw new Error(data.error.message);
+            if (data.error) {
+                console.error('Gallery API Error:', data.error);
+                throw new Error(data.error.message);
+            }
+
+            if (!data.files || data.files.length === 0) {
+                picker.innerHTML = '<option value="" disabled selected>No folders found in root.</option>';
+                return;
+            }
 
             picker.innerHTML = '<option value="" disabled selected>-- Select a Gallery --</option>';
             data.files.sort((a, b) => a.name.localeCompare(b.name)).forEach(folder => {
@@ -103,8 +111,12 @@ title: Gallery
             picker.addEventListener('change', (e) => loadFolder(e.target.value));
 
         } catch (err) {
-            console.error('Drive Error:', err);
+            console.error('Drive Init Error:', err);
             picker.innerHTML = `<option disabled selected>Error: ${err.message}</option>`;
+            // Show the error notice if it's a permission issue
+            if (err.message.includes('blocked') || err.message.includes('restricted')) {
+                document.getElementById('api-notice').style.display = 'block';
+            }
         }
     }
 

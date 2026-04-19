@@ -26,10 +26,21 @@ title: App Development
                             class="card-btn">
                             <span><i class="fa-solid fa-file-pdf"></i> Documentation</span>
                         </a>
-                        <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=nhhike@gmail.com&item_name=Support+NH-HIKE+Development&currency_code=USD&source=url" 
-                            class="card-btn" style="background: rgba(249, 168, 37, 0.1); border-color: var(--accent); color: var(--accent);">
-                            <span><i class="fa-solid fa-heart"></i> Donate $</span>
-                        </a>
+                        <div id="donate-button-container" style="display: flex; justify-content: center; margin-top: 5px;">
+                            <div id="donate-button"></div>
+                            <script src="https://www.paypalobjects.com/donate/sdk/donate-sdk.js" charset="UTF-8"></script>
+                            <script>
+                            PayPal.Donation.Button({
+                            env:'production',
+                            hosted_button_id:'YBMDUG8SPQFQ4',
+                            image: {
+                            src:'https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif',
+                            alt:'Donate with PayPal button',
+                            title:'PayPal - The safer, easier way to pay online!',
+                            }
+                            }).render('#donate-button');
+                            </script>
+                        </div>
                     </div>
                 </div>
 

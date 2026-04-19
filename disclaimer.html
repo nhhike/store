@@ -1,0 +1,128 @@
+---
+layout: default
+title: Liability Disclaimer
+---
+
+<section class="hero">
+    <div class="hero-content">
+        <h1>Safety First</h1>
+        <p>Please review our Liability Disclaimer before proceeding with your download.</p>
+        
+        <div class="main-content" style="height: calc(100vh - 250px); max-height: 700px;">
+            <div class="glass-content" style="height: 100%; display: flex; flex-direction: column; padding: 30px;">
+                <h2 style="text-align: center; margin-bottom: 15px; font-size: 1.8rem;">Safety First</h2>
+                
+                <div id="disclaimer-text" class="scroll-box">
+                    <p><strong>Important Notice – Please Read Carefully Before Downloading or Installing Any APK</strong></p>
+                    <p>By downloading, installing, or using any .apk file made available on this website, you acknowledge and agree to the following terms:</p>
+
+                    <h3>User Responsibility</h3>
+                    <p>All .apk files are provided as-is and at your own risk. The download and installation of any APK is done solely at your discretion. You are fully responsible for any consequences that may arise from downloading, installing, or running the application.</p>
+
+                    <h3>No Liability for Damages</h3>
+                    <p>The developer, website owner, and any affiliated parties shall not be held liable for any direct, indirect, incidental, special, consequential, or punitive damages arising from the use or misuse of the APK. This includes, but is not limited to:
+                    <ul>
+                        <li>Data loss</li>
+                        <li>Device malfunction</li>
+                        <li>Security breaches</li>
+                        <li>Loss of functionality</li>
+                        <li>Any other damage to your device, software, or data</li>
+                    </ul></p>
+
+                    <h3>Testing Purposes Only</h3>
+                    <p>These .apk files are made available for testing purposes on specific supported Android hardware devices. They are not intended for general distribution and use on unsupported devices.</p>
+
+                    <h3>Risk of Hardware and Software Damage</h3>
+                    <p>Installing these APKs on older, unsupported, or incompatible Android devices may cause hardware damage, software instability, or permanent damage to other applications or the operating system. Any such damage, including bricking of the device, is entirely at the sole risk of the user/installer.</p>
+
+                    <h3>Wilderness Information and Navigation Disclaimer</h3>
+                    <p>Some of the apps available for download may provide wilderness information, including trail data, navigation aids, or environmental details. This information may contain errors or inaccuracies. The datasets used in the app are publicly available from government and educational servers, via other means, and may not always be online & availible for access. Control of those data servers is not within the control of the developer and they may occasionally be off for maintence or data servicing. Do not rely on any app for life-dependent or safety-critical decisions. Always carry a physical “real” compass and a paper map when venturing into the wilderness, and know how to use them. Electronic devices and software can be unpredictable and potentially unreliable for any number of reasons, including battery failure, signal loss, software bugs, or hardware issues.</p>
+
+                    <h3>Indemnification</h3>
+                    <p>You agree to indemnify, defend, and hold harmless the developer, website owner, and all related parties from any and all claims, losses, liabilities, damages, costs, and expenses (including reasonable attorney’s fees) arising out of or related to your download, installation, or use of the APK.</p>
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <a id="download-btn" href="#" class="btn primary" style="margin-left: 0; padding: 15px 40px; font-size: 1.1rem;">Continue to Download</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .scroll-box {
+        background: rgba(0, 0, 0, 0.4);
+        border: 1px solid var(--glass-border);
+        border-radius: 12px;
+        padding: 20px;
+        flex: 1;
+        overflow-y: scroll;
+        color: var(--text-white);
+        font-size: 1rem;
+        text-align: left;
+        scrollbar-width: thin;
+        scrollbar-color: var(--primary) transparent;
+        user-select: text;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .scroll-box::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .scroll-box::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: 10px;
+    }
+
+    .scroll-box h3 {
+        color: var(--accent);
+        margin: 20px 0 10px 0;
+        font-size: 1.2rem;
+    }
+
+    .scroll-box p {
+        margin-bottom: 15px;
+        line-height: 1.6;
+        color: #e2e8f0;
+    }
+
+    .scroll-box ul {
+        margin-left: 20px;
+        margin-bottom: 15px;
+    }
+
+    .scroll-box li {
+        margin-bottom: 5px;
+    }
+
+    @media screen and (max-width: 900px) {
+        .scroll-box {
+            height: 250px;
+            font-size: 0.85rem;
+            padding: 15px;
+        }
+        
+        .hero h1 { font-size: 2.2rem; }
+        .glass-content { padding: 25px; }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const downloadUrl = urlParams.get('url');
+        const btn = document.getElementById('download-btn');
+
+        if (downloadUrl) {
+            btn.href = decodeURIComponent(downloadUrl);
+        } else {
+            // Fallback if no URL is provided
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('No download URL specified. Please return to the App Development page.');
+            });
+        }
+    });
+</script>

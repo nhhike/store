@@ -86,7 +86,7 @@
             const desktopItems = document.querySelectorAll('#desktop-menu .nav-item');
             const mobileToggles = document.querySelectorAll('.mobile-link.dropdown-toggle');
 
-            // Desktop Toggle
+            // --- Desktop Dropdown Logic ---
             desktopItems.forEach(item => {
                 const toggle = item.querySelector('.dropdown-toggle');
                 if (!toggle) return;
@@ -96,19 +96,31 @@
                     e.stopPropagation();
                     
                     const isActive = item.classList.contains('active');
+                    
+                    // Close all other desktop dropdowns
                     desktopItems.forEach(other => other.classList.remove('active'));
-                    if (!isActive) item.classList.add('active');
+                    
+                    // Toggle current
+                    if (!isActive) {
+                        item.classList.add('active');
+                    }
                 });
             });
 
-            // Mobile Menu Toggle
+            // --- Mobile Menu Toggle ---
             hamburger.addEventListener('click', (e) => {
                 e.stopPropagation();
-                mobileMenu.classList.toggle('open');
-                hamburger.classList.toggle('active');
+                const isOpen = mobileMenu.classList.contains('open');
+                
+                if (isOpen) {
+                    closeAll();
+                } else {
+                    mobileMenu.classList.add('open');
+                    hamburger.classList.add('active');
+                }
             });
 
-            // Mobile Dropdown Toggle
+            // --- Mobile Dropdown Logic ---
             mobileToggles.forEach(toggle => {
                 toggle.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -116,26 +128,34 @@
                     const dropdown = toggle.nextElementSibling;
                     const isOpen = dropdown.classList.contains('open');
                     
+                    // Close other mobile dropdowns
                     document.querySelectorAll('.mobile-dropdown').forEach(dd => dd.classList.remove('open'));
-                    if (!isOpen) dropdown.classList.add('open');
+                    
+                    if (!isOpen) {
+                        dropdown.classList.add('open');
+                    }
                 });
             });
 
-            // Close everything on outside click
+            // --- Global Close Function ---
+            function closeAll() {
+                desktopItems.forEach(item => item.classList.remove('active'));
+                mobileMenu.classList.remove('open');
+                hamburger.classList.remove('active');
+                document.querySelectorAll('.mobile-dropdown').forEach(dd => dd.classList.remove('open'));
+            }
+
+            // Close on click outside
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.navbar')) {
-                    desktopItems.forEach(item => item.classList.remove('active'));
-                    mobileMenu.classList.remove('open');
-                    hamburger.classList.remove('active');
+                    closeAll();
                 }
             });
 
-            // Escape key support
+            // Close on Escape key
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
-                    desktopItems.forEach(item => item.classList.remove('active'));
-                    mobileMenu.classList.remove('open');
-                    hamburger.classList.remove('active');
+                    closeAll();
                 }
             });
         });

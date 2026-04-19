@@ -163,6 +163,7 @@
         // Compass Cursor Logic (Disabled on Mobile)
         const cursorDot = document.querySelector("[data-cursor-dot]");
         const cursorOutline = document.querySelector("[data-cursor-outline]");
+        const navbar = document.querySelector(".navbar");
 
         if (cursorDot && cursorOutline && window.innerWidth > 900) {
             window.addEventListener("mousemove", function (e) {
@@ -182,6 +183,18 @@
                 cursorOutline.style.left = `${posX}px`;
                 cursorOutline.style.top = `${posY}px`;
                 cursorOutline.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
+            });
+
+            // Hide cursor when entering the navbar
+            navbar.addEventListener("mouseenter", () => {
+                cursorDot.style.display = "none";
+                cursorOutline.style.display = "none";
+            });
+
+            // Show cursor when leaving the navbar
+            navbar.addEventListener("mouseleave", () => {
+                cursorDot.style.display = "block";
+                cursorOutline.style.display = "block";
             });
         }
     </script>

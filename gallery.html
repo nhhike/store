@@ -20,12 +20,14 @@ title: Gallery
     <!-- Gallery Picker -->
     <div class="glass-content" style="margin-bottom: 30px; text-align: center;">
         <h3 style="color: var(--accent); margin-bottom: 20px;">Select a Collection</h3>
-        <select id="gallery-picker" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--glass-border); padding: 12px 25px; border-radius: 30px; font-family: 'Inter', sans-serif; cursor: pointer; outline: none; width: min(100%, 400px);">
+        <select id="gallery-picker"
+            style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--glass-border); padding: 12px 25px; border-radius: 30px; font-family: 'Inter', sans-serif; cursor: pointer; outline: none; width: min(100%, 400px);">
             <option value="" disabled selected>Connecting to Drive...</option>
         </select>
         <div id="api-notice" style="display: none; margin-top: 15px; font-size: 0.8rem; color: var(--accent);">
-            <i class="fa-solid fa-triangle-exclamation"></i> API Key required for live updates. 
-            <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color: #fff;">Get one here</a>.
+            <i class="fa-solid fa-triangle-exclamation"></i> API Key required for live updates.
+            <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color: #fff;">Get one
+                here</a>.
         </div>
     </div>
 
@@ -35,15 +37,21 @@ title: Gallery
     </div>
 
     <!-- Gallery Items Grid -->
-    <div id="gallery-grid" class="card-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 0;">
+    <div id="gallery-grid" class="card-grid"
+        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 0;">
         <!-- Dynamic content -->
     </div>
 
     <!-- Media Modal -->
-    <div id="media-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
-        <span id="close-modal" style="position: absolute; top: 30px; right: 40px; color: #fff; font-size: 40px; cursor: pointer;">&times;</span>
-        <div id="modal-content" style="max-width: 90%; max-height: 90%; display: flex; align-items: center; justify-content: center;"></div>
-        <div id="modal-caption" style="position: absolute; bottom: 30px; color: #fff; font-family: 'Inter', sans-serif; background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 20px;"></div>
+    <div id="media-modal"
+        style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+        <span id="close-modal"
+            style="position: absolute; top: 30px; right: 40px; color: #fff; font-size: 40px; cursor: pointer;">&times;</span>
+        <div id="modal-content"
+            style="max-width: 90%; max-height: 90%; display: flex; align-items: center; justify-content: center;"></div>
+        <div id="modal-caption"
+            style="position: absolute; bottom: 30px; color: #fff; font-family: 'Inter', sans-serif; background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 20px;">
+        </div>
     </div>
 </div>
 
@@ -56,7 +64,7 @@ title: Gallery
      * Replace API_KEY with your Google Cloud API Key.
      * Ensure the Drive API is enabled and the root folder is shared as 'Public' or 'Anyone with link'.
      */
-    const API_KEY = ''; // ADD YOUR API KEY HERE
+    const API_KEY = 'AIzaSyB4KXMciiR9YisJ_1M2C5-EiiyeFJPWSlw'; // ADD YOUR API KEY HERE
     const ROOT_ID = '1EfIJvPEiJp48qs55RYypFcFHTJHGjqCX';
 
     const picker = document.getElementById('gallery-picker');
@@ -103,7 +111,7 @@ title: Gallery
     async function loadFolder(folderId) {
         grid.innerHTML = '<div style="text-align: center; width: 100%; grid-column: 1/-1;"><i class="fa-solid fa-spinner fa-spin"></i> Loading assets...</div>';
         descArea.style.display = 'none';
-        
+
         try {
             // Fetch all files in the folder (images, videos, and potential .md)
             const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,webContentLink)&key=${API_KEY}`;
@@ -111,7 +119,7 @@ title: Gallery
             const data = await response.json();
 
             const files = data.files;
-            
+
             // 1. Handle Markdown Description
             const mdFile = files.find(f => f.name.endsWith('.md'));
             if (mdFile) {
@@ -124,7 +132,7 @@ title: Gallery
 
             // 2. Filter images and videos
             const media = files.filter(f => f.mimeType.startsWith('image/') || f.mimeType.startsWith('video/'));
-            
+
             grid.innerHTML = '';
             if (media.length === 0) {
                 grid.innerHTML = '<p style="text-align: center; width: 100%; grid-column: 1/-1;">No media found in this folder.</p>';
@@ -161,12 +169,12 @@ title: Gallery
             </div>
         `;
 
-        card.addEventListener('mouseenter', () => { 
-            card.querySelector('img').style.transform = 'scale(1.1)'; 
+        card.addEventListener('mouseenter', () => {
+            card.querySelector('img').style.transform = 'scale(1.1)';
             card.querySelector('.card-label').style.opacity = '1';
         });
-        card.addEventListener('mouseleave', () => { 
-            card.querySelector('img').style.transform = 'scale(1)'; 
+        card.addEventListener('mouseleave', () => {
+            card.querySelector('img').style.transform = 'scale(1)';
             card.querySelector('.card-label').style.opacity = '0';
         });
 
@@ -177,7 +185,7 @@ title: Gallery
     function openMedia(file) {
         modalContent.innerHTML = '';
         modalCaption.textContent = file.name;
-        
+
         if (file.mimeType.startsWith('image/')) {
             const img = document.createElement('img');
             img.src = `https://lh3.googleusercontent.com/d/${file.id}=s0`; // Original size

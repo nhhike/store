@@ -365,9 +365,14 @@ body {
 
 /* Mobile Responsive Overrides */
 @media screen and (max-width: 900px) {
+    .nav-container { justify-content: flex-start; gap: 20px; }
+    .nav-branding { order: 2; }
+    .hamburger { display: flex; order: 1; margin-right: 10px; }
     .nav-menu { display: none; }
-    .hamburger { display: flex; }
-    .mobile-menu { display: block; } /* Show in DOM on mobile */
+    
+    .cursor-dot, .cursor-outline { display: none !important; }
+
+    .mobile-menu { display: block; } 
 
     .hero { padding-top: 100px; }
     .hero h1 { font-size: 2.2rem; }

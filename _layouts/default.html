@@ -98,12 +98,12 @@
                     const isActive = item.classList.contains('active');
                     
                     // Close all other desktop dropdowns
-                    desktopItems.forEach(other => other.classList.remove('active'));
+                    desktopItems.forEach(other => {
+                        if (other !== item) other.classList.remove('active');
+                    });
                     
                     // Toggle current
-                    if (!isActive) {
-                        item.classList.add('active');
-                    }
+                    item.classList.toggle('active');
                 });
             });
 
@@ -129,11 +129,11 @@
                     const isOpen = dropdown.classList.contains('open');
                     
                     // Close other mobile dropdowns
-                    document.querySelectorAll('.mobile-dropdown').forEach(dd => dd.classList.remove('open'));
+                    document.querySelectorAll('.mobile-dropdown').forEach(dd => {
+                        if (dd !== dropdown) dd.classList.remove('open');
+                    });
                     
-                    if (!isOpen) {
-                        dropdown.classList.add('open');
-                    }
+                    dropdown.classList.toggle('open');
                 });
             });
 
@@ -160,11 +160,11 @@
             });
         });
 
-        // Compass Cursor Logic
+        // Compass Cursor Logic (Disabled on Mobile)
         const cursorDot = document.querySelector("[data-cursor-dot]");
         const cursorOutline = document.querySelector("[data-cursor-outline]");
 
-        if (cursorDot && cursorOutline) {
+        if (cursorDot && cursorOutline && window.innerWidth > 900) {
             window.addEventListener("mousemove", function (e) {
                 cursorDot.style.opacity = "1";
                 cursorOutline.style.opacity = "1";

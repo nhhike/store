@@ -21,8 +21,8 @@ title: Gallery
     <div class="glass-content" style="margin-bottom: 30px; text-align: center;">
         <h3 style="color: var(--accent); margin-bottom: 20px;">Select a Collection</h3>
         <select id="gallery-picker"
-            style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--glass-border); padding: 12px 25px; border-radius: 30px; font-family: 'Inter', sans-serif; cursor: pointer; outline: none; width: min(100%, 400px);">
-            <option value="" disabled selected>Connecting to Drive...</option>
+            style="background: #1e293b; color: #fff; border: 1px solid var(--glass-border); padding: 12px 25px; border-radius: 30px; font-family: 'Inter', sans-serif; cursor: pointer; outline: none; width: min(100%, 400px); appearance: auto;">
+            <option value="" disabled selected style="background: #1e293b; color: #fff;">-- Select a Gallery --</option>
         </select>
         <div id="api-notice" style="display: none; margin-top: 15px; font-size: 0.8rem; color: var(--accent);">
             <i class="fa-solid fa-triangle-exclamation"></i> API Key required for live updates.
@@ -100,11 +100,14 @@ title: Gallery
                 return;
             }
 
-            picker.innerHTML = '<option value="" disabled selected>-- Select a Gallery --</option>';
+            console.log('Found Folders:', data.files);
+            picker.innerHTML = '<option value="" disabled selected style="background: #1e293b; color: #fff;">-- Select a Gallery --</option>';
             data.files.sort((a, b) => a.name.localeCompare(b.name)).forEach(folder => {
                 const option = document.createElement('option');
                 option.value = folder.id;
                 option.textContent = folder.name;
+                option.style.background = '#1e293b';
+                option.style.color = '#fff';
                 picker.appendChild(option);
             });
 

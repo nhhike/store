@@ -86,7 +86,8 @@ title: Gallery
 
     async function initGallery() {
         try {
-            const url = `https://www.googleapis.com/drive/v3/files?q='${ROOT_ID}'+in+parents+and+mimeType='application/vnd.google-apps.folder'+and+trashed=false&fields=files(id,name)&key=${API_KEY}`;
+            // Broaden search to find folders and shortcuts
+            const url = `https://www.googleapis.com/drive/v3/files?q='${ROOT_ID}'+in+parents+and+trashed=false&fields=files(id,name,mimeType)&key=${API_KEY}`;
             const response = await fetch(url);
             const data = await response.json();
 
@@ -95,14 +96,21 @@ title: Gallery
                 throw new Error(data.error.message);
             }
 
-            if (!data.files || data.files.length === 0) {
-                picker.innerHTML = '<option value="" disabled selected>No folders found in root.</option>';
+            // Filter for folders or shortcuts to folders
+            const folders = data.files.filter(f => 
+                f.mimeType === 'application/vnd.google-apps.folder' || 
+                f.mimeType === 'application/vnd.google-apps.shortcut'
+            );
+
+            console.log('Found Folders:', folders);
+
+            if (folders.length === 0) {
+                picker.innerHTML = '<option value="" disabled selected>No subfolders found in root.</option>';
                 return;
             }
 
-            console.log('Found Folders:', data.files);
             picker.innerHTML = '<option value="" disabled selected style="background: #1e293b; color: #fff;">-- Select a Gallery --</option>';
-            data.files.sort((a, b) => a.name.localeCompare(b.name)).forEach(folder => {
+            folders.sort((a, b) => a.name.localeCompare(b.name)).forEach(folder => {
                 const option = document.createElement('option');
                 option.value = folder.id;
                 option.textContent = folder.name;
@@ -116,7 +124,6 @@ title: Gallery
         } catch (err) {
             console.error('Drive Init Error:', err);
             picker.innerHTML = `<option disabled selected>Error: ${err.message}</option>`;
-            // Show the error notice if it's a permission issue
             if (err.message.includes('blocked') || err.message.includes('restricted')) {
                 document.getElementById('api-notice').style.display = 'block';
             }

@@ -182,11 +182,6 @@ body {
     z-index: 999;
 }
 
-.mobile-menu.open {
-    display: block;
-    max-height: 90vh;
-}
-
 .mobile-nav { list-style: none; padding: 20px 0; }
 
 .mobile-link {
@@ -373,6 +368,7 @@ body {
     .cursor-dot, .cursor-outline { display: none !important; }
 
     .mobile-menu { display: block; } 
+    .mobile-menu.open { max-height: 90vh; }
 
     .hero { padding-top: 100px; }
     .hero h1 { font-size: 2.2rem; }

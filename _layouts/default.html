@@ -76,10 +76,8 @@
 
     {{ content }}
 
-    {% if page.url == "/" or page.url == "/index" or page.url == "/index.html" %}
-
     <script>
-        // Navigation Logic - Click-to-Open
+        // Navigation Logic - Click-to-Open (Runs on all pages)
         document.addEventListener('DOMContentLoaded', () => {
             const hamburger = document.getElementById('hamburger');
             const mobileMenu = document.getElementById('mobile-menu');
@@ -94,15 +92,10 @@
                 toggle.addEventListener('click', (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    
                     const isActive = item.classList.contains('active');
-                    
-                    // Close all other desktop dropdowns
                     desktopItems.forEach(other => {
                         if (other !== item) other.classList.remove('active');
                     });
-                    
-                    // Toggle current
                     item.classList.toggle('active');
                 });
             });
@@ -111,7 +104,6 @@
             hamburger.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const isOpen = mobileMenu.classList.contains('open');
-                
                 if (isOpen) {
                     closeAll();
                 } else {
@@ -127,12 +119,9 @@
                     e.stopPropagation();
                     const dropdown = toggle.nextElementSibling;
                     const isOpen = dropdown.classList.contains('open');
-                    
-                    // Close other mobile dropdowns
                     document.querySelectorAll('.mobile-dropdown').forEach(dd => {
                         if (dd !== dropdown) dd.classList.remove('open');
                     });
-                    
                     dropdown.classList.toggle('open');
                 });
             });
@@ -147,20 +136,23 @@
 
             // Close on click outside
             document.addEventListener('click', (e) => {
-                if (!e.target.closest('.navbar')) {
-                    closeAll();
-                }
+                if (!e.target.closest('.navbar')) closeAll();
             });
 
             // Close on Escape key
             document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
+                if (e.key === 'Escape') closeAll();
+            });
+
+            // --- Sync States on Window Resize ---
+            window.addEventListener('resize', () => {
+                if (window.innerWidth > 900) {
                     closeAll();
                 }
             });
         });
 
-        // Compass Cursor Logic (Disabled on Mobile)
+        // Compass Cursor Logic (Only on home page elements)
         const cursorDot = document.querySelector("[data-cursor-dot]");
         const cursorOutline = document.querySelector("[data-cursor-outline]");
         const navbar = document.querySelector(".navbar");
@@ -173,7 +165,6 @@
                 const posX = e.clientX;
                 const posY = e.clientY;
                 const screenWidth = window.innerWidth;
-                
                 const rotation = ((posX - screenWidth / 2) / (screenWidth / 2)) * -90;
 
                 cursorDot.style.left = `${posX}px`;
@@ -185,19 +176,16 @@
                 cursorOutline.style.transform = `translate(-50%, -50%) rotate(${rotation}deg)`;
             });
 
-            // Hide cursor when entering the navbar
             navbar.addEventListener("mouseenter", () => {
                 cursorDot.style.display = "none";
                 cursorOutline.style.display = "none";
             });
 
-            // Show cursor when leaving the navbar
             navbar.addEventListener("mouseleave", () => {
                 cursorDot.style.display = "block";
                 cursorOutline.style.display = "block";
             });
         }
     </script>
-    {% endif %}
 </body>
 </html>

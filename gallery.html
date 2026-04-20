@@ -296,46 +296,85 @@ title: Gallery
 
     async function loadMarkdownTab(file, pane) {
         try {
-            const resp = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`);
-            const text = await resp.text();
+            const url = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
+            const resp = await fetch(url);
             
+            if (!resp.ok) {
+                const errData = await resp.json().catch(() => ({ error: { message: resp.statusText } }));
+                throw new Error(errData.error?.message || `HTTP ${resp.status}`);
+            }
+
+            const text = await resp.text();
             const contentHtml = marked.parse(text);
             initCollapsiblePane(pane, contentHtml);
             
         } catch (e) {
-            pane.innerHTML = `<p style="color:red;">Failed to load markdown: ${e.message}</p>`;
+            console.error('Markdown load error:', e);
+            pane.innerHTML = `
+                <div style="padding: 20px; text-align: center; color: #ff6b6b; background: rgba(255,0,0,0.05); border-radius: 12px; border: 1px solid rgba(255,107,107,0.2);">
+                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                    <p style="font-weight: 600;">Failed to load "${file.name}"</p>
+                    <p style="font-size: 0.85rem; opacity: 0.8; margin-top: 5px;">${e.message}</p>
+                    <p style="font-size: 0.75rem; margin-top: 15px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 6px;">
+                        Tip: Ensure the file is shared as "Anyone with the link can view" in Google Drive.
+                    </p>
+                </div>
+            `;
         }
     }
 
-    function loadGpxTab(file, pane) {
+    async function loadGpxTab(file, pane) {
         const containerId = `map-${file.id}`;
-        const mapHtml = `<div id="${containerId}" class="map-container"></div>`;
-        initCollapsiblePane(pane, mapHtml);
         
-        const gpxUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
-        
-        setTimeout(() => {
-            const mapDiv = document.getElementById(containerId);
-            if (!mapDiv) return;
+        try {
+            const url = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
+            const resp = await fetch(url);
             
-            const map = L.map(containerId).setView([43.0, -71.5], 10);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(map);
+            if (!resp.ok) {
+                const errData = await resp.json().catch(() => ({ error: { message: resp.statusText } }));
+                throw new Error(errData.error?.message || `HTTP ${resp.status}`);
+            }
 
-            mapDiv._leaflet_map = map;
+            const gpxData = await resp.text();
+            
+            const mapHtml = `<div id="${containerId}" class="map-container"></div>`;
+            initCollapsiblePane(pane, mapHtml);
+            
+            setTimeout(() => {
+                const mapDiv = document.getElementById(containerId);
+                if (!mapDiv) return;
+                
+                const map = L.map(containerId).setView([43.0, -71.5], 10);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
 
-            new L.GPX(gpxUrl, {
-                async: true,
-                marker_options: {
-                    startIconUrl: 'https://unpkg.com/leaflet-gpx@1.7.0/pin-icon-start.png',
-                    endIconUrl: 'https://unpkg.com/leaflet-gpx@1.7.0/pin-icon-end.png',
-                    shadowUrl: 'https://unpkg.com/leaflet-gpx@1.7.0/pin-shadow.png'
-                }
-            }).on('loaded', function(e) {
-                map.fitBounds(e.target.getBounds());
-            }).addTo(map);
-        }, 200);
+                mapDiv._leaflet_map = map;
+
+                new L.GPX(gpxData, {
+                    async: true,
+                    marker_options: {
+                        startIconUrl: 'https://unpkg.com/leaflet-gpx@1.7.0/pin-icon-start.png',
+                        endIconUrl: 'https://unpkg.com/leaflet-gpx@1.7.0/pin-icon-end.png',
+                        shadowUrl: 'https://unpkg.com/leaflet-gpx@1.7.0/pin-shadow.png'
+                    }
+                }).on('loaded', function(e) {
+                    map.fitBounds(e.target.getBounds());
+                }).on('error', function(e) {
+                    console.error('GPX parse error:', e);
+                }).addTo(map);
+            }, 300);
+
+        } catch (e) {
+            console.error('GPX load error:', e);
+            pane.innerHTML = `
+                <div style="padding: 20px; text-align: center; color: #ff6b6b; background: rgba(255,0,0,0.05); border-radius: 12px; border: 1px solid rgba(255,107,107,0.2);">
+                    <i class="fa-solid fa-map-location-dot" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                    <p style="font-weight: 600;">Failed to load Map "${file.name}"</p>
+                    <p style="font-size: 0.85rem; opacity: 0.8; margin-top: 5px;">${e.message}</p>
+                </div>
+            `;
+        }
     }
 
     function initCollapsiblePane(pane, innerHtml) {

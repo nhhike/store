@@ -40,16 +40,29 @@ title: Gallery
     .tab-pane.active {
         display: block;
     }
-    .markdown-content {
-        display: -webkit-box;
-        -webkit-line-clamp: 5;
-        -webkit-box-orient: vertical;
+    .collapsible-wrapper {
+        max-height: 140px; /* ~5 lines of text */
         overflow: hidden;
-        transition: all 0.3s ease;
+        transition: max-height 0.5s ease;
+        position: relative;
     }
-    .markdown-content.expanded {
-        display: block;
-        -webkit-line-clamp: unset;
+    .collapsible-wrapper.expanded {
+        max-height: 1200px; /* Enough for maps and long text */
+    }
+    /* Fade effect for collapsed content */
+    .collapsible-wrapper::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 50px;
+        background: linear-gradient(transparent, #0f172a); /* Matches background color */
+        transition: 0.3s;
+        pointer-events: none;
+    }
+    .collapsible-wrapper.expanded::after {
+        opacity: 0;
     }
     .map-container {
         width: 100%;
@@ -57,6 +70,7 @@ title: Gallery
         border-radius: 15px;
         border: 1px solid var(--glass-border);
         z-index: 10;
+        margin-bottom: 20px;
     }
 </style>
 
@@ -285,32 +299,9 @@ title: Gallery
             const resp = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`);
             const text = await resp.text();
             
-            pane.innerHTML = `
-                <div class="markdown-content">${marked.parse(text)}</div>
-                <button class="desc-toggle-btn" style="background: none; border: none; color: var(--accent); cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 600; margin-top: 15px; padding: 5px 0; display: none; font-size: 0.9rem;">
-                    Read More <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem; margin-left: 5px;"></i>
-                </button>
-            `;
+            const contentHtml = marked.parse(text);
+            initCollapsiblePane(pane, contentHtml);
             
-            const content = pane.querySelector('.markdown-content');
-            const toggle = pane.querySelector('.desc-toggle-btn');
-            
-            setTimeout(() => {
-                if (content.scrollHeight > content.clientHeight + 5) {
-                    toggle.style.display = 'block';
-                }
-            }, 200);
-
-            toggle.addEventListener('click', () => {
-                const isExpanded = content.classList.contains('expanded');
-                if (isExpanded) {
-                    content.classList.remove('expanded');
-                    toggle.innerHTML = 'Read More <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem; margin-left: 5px;"></i>';
-                } else {
-                    content.classList.add('expanded');
-                    toggle.innerHTML = 'Read Less <i class="fa-solid fa-chevron-up" style="font-size: 0.7rem; margin-left: 5px;"></i>';
-                }
-            });
         } catch (e) {
             pane.innerHTML = `<p style="color:red;">Failed to load markdown: ${e.message}</p>`;
         }
@@ -318,18 +309,21 @@ title: Gallery
 
     function loadGpxTab(file, pane) {
         const containerId = `map-${file.id}`;
-        pane.innerHTML = `<div id="${containerId}" class="map-container"></div>`;
+        const mapHtml = `<div id="${containerId}" class="map-container"></div>`;
+        initCollapsiblePane(pane, mapHtml);
         
         const gpxUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
         
         setTimeout(() => {
+            const mapDiv = document.getElementById(containerId);
+            if (!mapDiv) return;
+            
             const map = L.map(containerId).setView([43.0, -71.5], 10);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
 
-            // Store map instance on DOM for invalidateSize
-            document.getElementById(containerId)._leaflet_map = map;
+            mapDiv._leaflet_map = map;
 
             new L.GPX(gpxUrl, {
                 async: true,
@@ -337,17 +331,50 @@ title: Gallery
                     startIconUrl: 'https://unpkg.com/leaflet-gpx@1.7.0/pin-icon-start.png',
                     endIconUrl: 'https://unpkg.com/leaflet-gpx@1.7.0/pin-icon-end.png',
                     shadowUrl: 'https://unpkg.com/leaflet-gpx@1.7.0/pin-shadow.png'
-                },
-                polyline_options: {
-                    color: '#4ECDC4',
-                    opacity: 0.8,
-                    weight: 4,
-                    lineCap: 'round'
                 }
             }).on('loaded', function(e) {
                 map.fitBounds(e.target.getBounds());
             }).addTo(map);
-        }, 100);
+        }, 200);
+    }
+
+    function initCollapsiblePane(pane, innerHtml) {
+        pane.innerHTML = `
+            <div class="collapsible-wrapper">
+                <div class="collapsible-inner">${innerHtml}</div>
+            </div>
+            <button class="desc-toggle-btn" style="background: none; border: none; color: var(--accent); cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 600; margin-top: 15px; padding: 5px 0; display: none; font-size: 0.9rem;">
+                Read More <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem; margin-left: 5px;"></i>
+            </button>
+        `;
+
+        const wrapper = pane.querySelector('.collapsible-wrapper');
+        const inner = pane.querySelector('.collapsible-inner');
+        const toggle = pane.querySelector('.desc-toggle-btn');
+
+        setTimeout(() => {
+            // Check if content exceeds 140px (roughly 5 lines)
+            if (inner.scrollHeight > 145) {
+                toggle.style.display = 'block';
+            }
+        }, 400);
+
+        toggle.addEventListener('click', () => {
+            const isExpanded = wrapper.classList.contains('expanded');
+            if (isExpanded) {
+                wrapper.classList.remove('expanded');
+                toggle.innerHTML = 'Read More <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem; margin-left: 5px;"></i>';
+            } else {
+                wrapper.classList.add('expanded');
+                toggle.innerHTML = 'Read Less <i class="fa-solid fa-chevron-up" style="font-size: 0.7rem; margin-left: 5px;"></i>';
+            }
+            
+            // Fix map if it was just expanded
+            const mapDiv = wrapper.querySelector('.map-container');
+            if (mapDiv && mapDiv._leaflet_map) {
+                setTimeout(() => mapDiv._leaflet_map.invalidateSize(), 500);
+            }
+        });
     }
 
     function renderMediaCard(file, index) {

@@ -19,14 +19,16 @@ title: Gallery
         background: rgba(255,255,255,0.05);
         border: 1px solid var(--glass-border);
         color: #fff;
-        padding: 10px 20px;
-        border-radius: 12px 12px 0 0;
+        padding: 6px 12px;
+        border-radius: 8px 8px 0 0;
         cursor: pointer;
         font-family: 'Outfit', sans-serif;
-        font-size: 0.9rem;
+        font-size: 0.75rem;
         transition: 0.3s;
         border-bottom: none;
         opacity: 0.6;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
     .tab-btn.active {
         background: rgba(255,255,255,0.15);
@@ -71,6 +73,21 @@ title: Gallery
         border: 1px solid var(--glass-border);
         z-index: 10;
         margin-bottom: 20px;
+        background: #1e293b;
+    }
+    /* Smaller markdown titles in tabs */
+    .collapsible-inner h1, .collapsible-inner h2 {
+        font-size: 1.4rem !important;
+        margin-top: 15px;
+        margin-bottom: 10px;
+        color: var(--accent);
+    }
+    .collapsible-inner h3 {
+        font-size: 1.1rem !important;
+    }
+    .collapsible-inner p {
+        font-size: 0.9rem;
+        line-height: 1.5;
     }
 </style>
 
@@ -113,7 +130,7 @@ title: Gallery
 
     <!-- Gallery Items Grid -->
     <div id="gallery-grid" class="card-grid"
-        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; padding: 0;">
+        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; padding: 0; scroll-margin-top: 100px;">
         <!-- Dynamic content -->
     </div>
     
@@ -287,10 +304,24 @@ title: Gallery
         const pane = document.getElementById(tabId);
         pane.classList.add('active');
         
-        // If there's a map in this pane, invalidate size to fix rendering issues in hidden elements
+        // Ensure "Read More" logic is recalculated if it was missed
+        const toggle = pane.querySelector('.desc-toggle-btn');
+        const wrapper = pane.querySelector('.collapsible-wrapper');
+        const inner = pane.querySelector('.collapsible-inner');
+        if (toggle && inner && wrapper && !wrapper.classList.contains('expanded')) {
+            if (inner.scrollHeight > 145) toggle.style.display = 'block';
+        }
+
+        // If there's a map in this pane, invalidate size to fix rendering issues
         const mapDiv = pane.querySelector('.map-container');
         if (mapDiv && mapDiv._leaflet_map) {
-            mapDiv._leaflet_map.invalidateSize();
+            setTimeout(() => {
+                mapDiv._leaflet_map.invalidateSize();
+                // If it's the first time or bounds aren't set, try to fit bounds again
+                if (mapDiv._leaflet_gpx) {
+                    mapDiv._leaflet_map.fitBounds(mapDiv._leaflet_gpx.getBounds());
+                }
+            }, 100);
         }
     }
 
@@ -351,7 +382,7 @@ title: Gallery
 
                 mapDiv._leaflet_map = map;
 
-                new L.GPX(gpxData, {
+                const gpxLayer = new L.GPX(gpxData, {
                     async: true,
                     marker_options: {
                         startIconUrl: 'https://unpkg.com/leaflet-gpx@1.7.0/pin-icon-start.png',
@@ -360,10 +391,12 @@ title: Gallery
                     }
                 }).on('loaded', function(e) {
                     map.fitBounds(e.target.getBounds());
+                    // Store layer for later fitBounds on tab switch
+                    mapDiv._leaflet_gpx = e.target;
                 }).on('error', function(e) {
                     console.error('GPX parse error:', e);
                 }).addTo(map);
-            }, 300);
+            }, 500);
 
         } catch (e) {
             console.error('GPX load error:', e);
@@ -392,11 +425,12 @@ title: Gallery
         const toggle = pane.querySelector('.desc-toggle-btn');
 
         setTimeout(() => {
-            // Check if content exceeds 140px (roughly 5 lines)
-            if (inner.scrollHeight > 145) {
+            // Check if content exceeds 140px
+            // Use a small buffer and check scrollHeight
+            if (inner.scrollHeight > 150) {
                 toggle.style.display = 'block';
             }
-        }, 400);
+        }, 800);
 
         toggle.addEventListener('click', () => {
             const isExpanded = wrapper.classList.contains('expanded');

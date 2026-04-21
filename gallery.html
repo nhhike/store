@@ -9,12 +9,26 @@ title: Gallery
     It fetches live data from Google Drive.
 -->
 
-<!-- Leaflet for GPX Mapping -->
+<!-- Leaflet for GPX/KML Mapping -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
+<script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.3.1/leaflet-omnivore.min.js'></script>
 
 <style>
+    .tab-divider {
+        width: 1px;
+        height: 25px;
+        background: var(--glass-border);
+        margin: 0 10px;
+        align-self: center;
+    }
+    .content-divider {
+        height: 1px;
+        background: linear-gradient(to right, transparent, var(--glass-border), transparent);
+        margin: 20px 0;
+        width: 100%;
+    }
     .tab-btn {
         background: rgba(255,255,255,0.05);
         border: 1px solid var(--glass-border);
@@ -115,14 +129,19 @@ title: Gallery
 
     <!-- Description Area -->
     <div id="gallery-description" class="glass-content" style="margin-bottom: 30px; display: none; position: relative;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; flex-wrap: wrap; gap: 15px;">
-            <div id="tabs-header" style="display: flex; gap: 5px; flex-wrap: wrap;">
-                <!-- Tab buttons generated here -->
-            </div>
+        <!-- Tab Navigation Grouped -->
+        <div id="tabs-header" style="display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; align-items: center; margin-bottom: 20px;">
+            <!-- Tab buttons generated here -->
+        </div>
+        
+        <div style="display: flex; justify-content: center; margin-bottom: 25px;">
             <button id="jump-to-images" style="background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); color: #fff; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.85rem; transition: 0.3s; display: flex; align-items: center; gap: 8px;">
                 Jump to Images <i class="fa-solid fa-images"></i>
             </button>
         </div>
+
+        <div class="content-divider"></div>
+
         <div id="tabs-content">
             <!-- Tab panes generated here -->
         </div>
@@ -252,38 +271,32 @@ title: Gallery
             const data = await response.json();
 
             const files = data.files;
-            const contentFiles = files.filter(f => f.name.endsWith('.md') || f.name.endsWith('.gpx'))
-                                     .sort((a, b) => a.name.localeCompare(b.name));
+            const textFiles = prepareTabData(files.filter(f => f.name.endsWith('.md')));
+            const mapFiles = prepareTabData(files.filter(f => f.name.endsWith('.gpx') || f.name.endsWith('.kml')));
 
-            if (contentFiles.length > 0) {
+            if (textFiles.length > 0 || mapFiles.length > 0) {
                 tabsHeader.innerHTML = '';
                 tabsContent.innerHTML = '';
                 descArea.style.display = 'block';
 
-                for (const [idx, file] of contentFiles.entries()) {
-                    const isFirst = idx === 0;
-                    const cleanName = file.name.replace(/\.(md|gpx)$/i, '');
-                    
-                    // Create Tab Button
-                    const btn = document.createElement('button');
-                    btn.className = `tab-btn ${isFirst ? 'active' : ''}`;
-                    btn.textContent = cleanName;
-                    btn.dataset.tabId = `tab-${idx}`;
-                    btn.addEventListener('click', () => switchTab(btn, `tab-${idx}`));
-                    tabsHeader.appendChild(btn);
+                let tabIdx = 0;
+                
+                // Render Text Tabs
+                textFiles.forEach((file, idx) => {
+                    createTabElements(file, tabIdx++, tabIdx === 1);
+                });
 
-                    // Create Tab Pane
-                    const pane = document.createElement('div');
-                    pane.id = `tab-${idx}`;
-                    pane.className = `tab-pane ${isFirst ? 'active' : ''}`;
-                    tabsContent.appendChild(pane);
-
-                    if (file.name.endsWith('.md')) {
-                        loadMarkdownTab(file, pane);
-                    } else if (file.name.endsWith('.gpx')) {
-                        loadGpxTab(file, pane);
-                    }
+                // Divider if both exist
+                if (textFiles.length > 0 && mapFiles.length > 0) {
+                    const div = document.createElement('div');
+                    div.className = 'tab-divider';
+                    tabsHeader.appendChild(div);
                 }
+
+                // Render Map Tabs
+                mapFiles.forEach((file, idx) => {
+                    createTabElements(file, tabIdx++, tabIdx === 1);
+                });
             }
 
             currentMediaList = files.filter(f => f.mimeType.startsWith('image/') || f.mimeType.startsWith('video/'))
@@ -292,8 +305,37 @@ title: Gallery
             grid.innerHTML = '';
             currentMediaList.forEach((file, index) => renderMediaCard(file, index));
 
-        } catch (err) {
-            grid.innerHTML = `<p style="color: red;">Error: ${err.message}</p>`;
+    function prepareTabData(files) {
+        return files.map(file => {
+            const name = file.name;
+            const match = name.match(/^(\d{1,2})\s*(.*)/);
+            const order = match ? parseInt(match[1], 10) : Infinity;
+            const remainingName = match ? match[2] : name;
+            const cleanName = remainingName.replace(/\.(md|gpx|kml)$/i, '');
+            return { ...file, order, cleanName };
+        }).sort((a, b) => {
+            if (a.order !== b.order) return a.order - b.order;
+            return a.name.localeCompare(b.name);
+        });
+    }
+
+    function createTabElements(file, idx, isFirst) {
+        const btn = document.createElement('button');
+        btn.className = `tab-btn ${isFirst ? 'active' : ''}`;
+        btn.textContent = file.cleanName;
+        btn.dataset.tabId = `tab-${idx}`;
+        btn.addEventListener('click', () => switchTab(btn, `tab-${idx}`));
+        tabsHeader.appendChild(btn);
+
+        const pane = document.createElement('div');
+        pane.id = `tab-${idx}`;
+        pane.className = `tab-pane ${isFirst ? 'active' : ''}`;
+        tabsContent.appendChild(pane);
+
+        if (file.name.endsWith('.md')) {
+            loadMarkdownTab(file, pane);
+        } else {
+            loadMapTab(file, pane);
         }
     }
 
@@ -354,22 +396,17 @@ title: Gallery
         }
     }
 
-    async function loadGpxTab(file, pane) {
+    async function loadMapTab(file, pane) {
         const containerId = `map-${file.id}`;
         
         try {
             const url = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
             const resp = await fetch(url);
-            
-            if (!resp.ok) {
-                const errData = await resp.json().catch(() => ({ error: { message: resp.statusText } }));
-                throw new Error(errData.error?.message || `HTTP ${resp.status}`);
-            }
-
-            const gpxData = await resp.text();
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const data = await resp.text();
             
             const mapHtml = `<div id="${containerId}" class="map-container"></div>`;
-            initCollapsiblePane(pane, mapHtml);
+            initCollapsiblePane(pane, mapHtml, true); // true = autoExpand for maps
             
             setTimeout(() => {
                 const mapDiv = document.getElementById(containerId);
@@ -383,35 +420,36 @@ title: Gallery
 
                 mapDiv._leaflet_map = map;
 
-                const gpxLayer = new L.GPX(gpxData, {
-                    async: true,
-                    marker_options: {
-                        startIconUrl: 'https://unpkg.com/leaflet-gpx@1.7.0/pin-icon-start.png',
-                        endIconUrl: 'https://unpkg.com/leaflet-gpx@1.7.0/pin-icon-end.png',
-                        shadowUrl: 'https://unpkg.com/leaflet-gpx@1.7.0/pin-shadow.png'
-                    }
-                }).on('loaded', function(e) {
-                    map.fitBounds(e.target.getBounds());
-                    // Store layer for later fitBounds on tab switch
-                    mapDiv._leaflet_gpx = e.target;
-                }).on('error', function(e) {
-                    console.error('GPX parse error:', e);
+                const layer = file.name.endsWith('.gpx') 
+                    ? new L.GPX(data, {
+                        async: true,
+                        marker_options: {
+                            startIconUrl: 'https://unpkg.com/leaflet-gpx@1.7.0/pin-icon-start.png',
+                            endIconUrl: 'https://unpkg.com/leaflet-gpx@1.7.0/pin-icon-end.png',
+                            shadowUrl: 'https://unpkg.com/leaflet-gpx@1.7.0/pin-shadow.png'
+                        }
+                    })
+                    : omnivore.kml(data);
+
+                layer.on('loaded', function(e) {
+                    map.fitBounds(e.target ? e.target.getBounds() : layer.getBounds());
+                    mapDiv._leaflet_track = e.target || layer;
                 }).addTo(map);
+                
+                if (file.name.endsWith('.kml')) {
+                    // Omnivore KML doesn't always fire 'loaded' same way
+                    setTimeout(() => map.fitBounds(layer.getBounds()), 1000);
+                }
+
             }, 500);
 
         } catch (e) {
-            console.error('GPX load error:', e);
-            pane.innerHTML = `
-                <div style="padding: 20px; text-align: center; color: #ff6b6b; background: rgba(255,0,0,0.05); border-radius: 12px; border: 1px solid rgba(255,107,107,0.2);">
-                    <i class="fa-solid fa-map-location-dot" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
-                    <p style="font-weight: 600;">Failed to load Map "${file.name}"</p>
-                    <p style="font-size: 0.85rem; opacity: 0.8; margin-top: 5px;">${e.message}</p>
-                </div>
-            `;
+            console.error('Map load error:', e);
+            pane.innerHTML = `<div style="padding: 20px; text-align: center; color: #ff6b6b;">Failed to load Map "${file.name}": ${e.message}</div>`;
         }
     }
 
-    function initCollapsiblePane(pane, innerHtml) {
+    function initCollapsiblePane(pane, innerHtml, autoExpand = false) {
         pane.innerHTML = `
             <div class="collapsible-wrapper">
                 <div class="collapsible-inner">${innerHtml}</div>
@@ -425,10 +463,13 @@ title: Gallery
         const inner = pane.querySelector('.collapsible-inner');
         const toggle = pane.querySelector('.desc-toggle-btn');
 
+        if (autoExpand) {
+            wrapper.classList.add('expanded');
+            toggle.style.display = 'none'; // No need for toggle if auto-expanded
+        }
+
         setTimeout(() => {
-            // Check if content exceeds 140px
-            // Use a small buffer and check scrollHeight
-            if (inner.scrollHeight > 150) {
+            if (!autoExpand && inner.scrollHeight > 150) {
                 toggle.style.display = 'block';
             }
         }, 800);

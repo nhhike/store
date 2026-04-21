@@ -127,11 +127,12 @@ title: Gallery
         </div>
     </div>
 
-    <!-- Description Area -->
     <div id="gallery-description" class="glass-content" style="margin-bottom: 30px; display: none; position: relative;">
-        <!-- Tab Navigation Grouped -->
-        <div id="tabs-header" style="display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; align-items: center; margin-bottom: 20px;">
-            <!-- Tab buttons generated here -->
+        <!-- Tab Navigation Grouped Vertically -->
+        <div id="tabs-header" style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 20px;">
+            <div id="text-tabs-row" style="display: flex; gap: 5px; flex-wrap: wrap;"></div>
+            <div id="tabs-middle-divider" class="content-divider" style="margin: 10px 0; display: none;"></div>
+            <div id="map-tabs-row" style="display: flex; gap: 5px; flex-wrap: wrap;"></div>
         </div>
         
         <div style="display: flex; justify-content: center; margin-bottom: 25px;">
@@ -275,27 +276,27 @@ title: Gallery
             const mapFiles = prepareTabData(files.filter(f => f.name.endsWith('.gpx') || f.name.endsWith('.kml')));
 
             if (textFiles.length > 0 || mapFiles.length > 0) {
-                tabsHeader.innerHTML = '';
+                const textRow = document.getElementById('text-tabs-row');
+                const mapRow = document.getElementById('map-tabs-row');
+                const midDiv = document.getElementById('tabs-middle-divider');
+                
+                textRow.innerHTML = '';
+                mapRow.innerHTML = '';
+                midDiv.style.display = (textFiles.length > 0 && mapFiles.length > 0) ? 'block' : 'none';
+                
                 tabsContent.innerHTML = '';
                 descArea.style.display = 'block';
 
                 let tabIdx = 0;
                 
                 // Render Text Tabs
-                textFiles.forEach((file, idx) => {
-                    createTabElements(file, tabIdx++, tabIdx === 1);
+                textFiles.forEach((file) => {
+                    createTabElements(file, tabIdx++, tabIdx === 1, textRow);
                 });
 
-                // Divider if both exist
-                if (textFiles.length > 0 && mapFiles.length > 0) {
-                    const div = document.createElement('div');
-                    div.className = 'tab-divider';
-                    tabsHeader.appendChild(div);
-                }
-
                 // Render Map Tabs
-                mapFiles.forEach((file, idx) => {
-                    createTabElements(file, tabIdx++, tabIdx === 1);
+                mapFiles.forEach((file) => {
+                    createTabElements(file, tabIdx++, tabIdx === 1, mapRow);
                 });
             }
 
@@ -325,13 +326,13 @@ title: Gallery
         });
     }
 
-    function createTabElements(file, idx, isFirst) {
+    function createTabElements(file, idx, isFirst, container) {
         const btn = document.createElement('button');
         btn.className = `tab-btn ${isFirst ? 'active' : ''}`;
         btn.textContent = file.cleanName;
         btn.dataset.tabId = `tab-${idx}`;
         btn.addEventListener('click', () => switchTab(btn, `tab-${idx}`));
-        tabsHeader.appendChild(btn);
+        container.appendChild(btn);
 
         const pane = document.createElement('div');
         pane.id = `tab-${idx}`;

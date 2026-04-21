@@ -24,8 +24,8 @@ title: Gallery
         align-self: center;
     }
     .content-divider {
-        height: 1px;
-        background: linear-gradient(to right, transparent, var(--glass-border), transparent);
+        height: 2px;
+        background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent);
         margin: 20px 0;
         width: 100%;
     }
@@ -367,8 +367,8 @@ title: Gallery
             setTimeout(() => {
                 mapDiv._leaflet_map.invalidateSize();
                 // If it's the first time or bounds aren't set, try to fit bounds again
-                if (mapDiv._leaflet_gpx) {
-                    mapDiv._leaflet_map.fitBounds(mapDiv._leaflet_gpx.getBounds());
+                if (mapDiv._leaflet_track) {
+                    mapDiv._leaflet_map.fitBounds(mapDiv._leaflet_track.getBounds());
                 }
             }, 100);
         }

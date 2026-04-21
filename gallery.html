@@ -305,6 +305,12 @@ title: Gallery
             grid.innerHTML = '';
             currentMediaList.forEach((file, index) => renderMediaCard(file, index));
 
+        } catch (err) {
+            console.error('Folder load error:', err);
+            grid.innerHTML = `<p style="color: red;">Error loading folder: ${err.message}</p>`;
+        }
+    }
+
     function prepareTabData(files) {
         return files.map(file => {
             const name = file.name;

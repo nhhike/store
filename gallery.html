@@ -243,14 +243,57 @@ title: Gallery
                 f.mimeType === 'application/vnd.google-apps.shortcut'
             );
 
+            // Group and Sort Folders
+            const groups = {};
+            folders.forEach(f => {
+                const name = f.name;
+                // Match Year (4 digits) at the start
+                const match = name.match(/^(\d{4})\s+(.*)/);
+                const year = match ? parseInt(match[1]) : 0;
+                const rest = match ? match[2] : name;
+                
+                // Determine Location (Group)
+                // Logic: Text before first " - " OR the first two words (e.g. "Massabesic Lake")
+                let location = "";
+                if (rest.includes(" - ")) {
+                    location = rest.split(" - ")[0].trim();
+                } else {
+                    const words = rest.trim().split(/\s+/);
+                    location = words.slice(0, 2).join(" ");
+                }
+
+                if (!groups[location]) groups[location] = [];
+                groups[location].push({ id: f.id, name: name, year: year });
+            });
+
+            // Sort group names (Locations) alphabetically
+            const sortedGroupKeys = Object.keys(groups).sort();
+
             picker.innerHTML = '<option value="" disabled selected style="background: #1e293b; color: #fff;">-- Select a Gallery --</option>';
-            folders.sort((a, b) => a.name.localeCompare(b.name)).forEach(folder => {
-                const option = document.createElement('option');
-                option.value = folder.id;
-                option.textContent = folder.name;
-                option.style.background = '#1e293b';
-                option.style.color = '#fff';
-                picker.appendChild(option);
+            
+            sortedGroupKeys.forEach((loc, idx) => {
+                // Add horizontal divider between groups
+                if (idx > 0) {
+                    const separator = document.createElement('option');
+                    separator.disabled = true;
+                    separator.textContent = "──────────────────────────────";
+                    separator.style.background = '#1e293b';
+                    separator.style.color = 'rgba(255,255,255,0.2)';
+                    separator.style.fontSize = '8px';
+                    separator.style.textAlign = 'center';
+                    picker.appendChild(separator);
+                }
+
+                // Sort items within this location group by year descending
+                // If years match, sort alphabetically by full name
+                groups[loc].sort((a, b) => (b.year - a.year) || a.name.localeCompare(b.name)).forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.id;
+                    option.textContent = item.name;
+                    option.style.background = '#1e293b';
+                    option.style.color = '#fff';
+                    picker.appendChild(option);
+                });
             });
 
             picker.addEventListener('change', (e) => loadFolder(e.target.value));

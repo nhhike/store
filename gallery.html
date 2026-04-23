@@ -23,14 +23,16 @@ title: Gallery
         margin: 0 10px;
         align-self: center;
     }
+
     .content-divider {
         height: 2px;
-        background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent);
+        background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.3), transparent);
         margin: 20px 0;
         width: 100%;
     }
+
     .tab-btn {
-        background: rgba(255,255,255,0.05);
+        background: rgba(255, 255, 255, 0.05);
         border: 1px solid var(--glass-border);
         color: #fff;
         padding: 6px 12px;
@@ -44,27 +46,35 @@ title: Gallery
         text-transform: uppercase;
         letter-spacing: 1px;
     }
+
     .tab-btn.active {
-        background: rgba(255,255,255,0.15);
+        background: rgba(255, 255, 255, 0.15);
         opacity: 1;
         border-top: 2px solid var(--accent);
     }
+
     .tab-pane {
         display: none;
         padding-top: 20px;
     }
+
     .tab-pane.active {
         display: block;
     }
+
     .collapsible-wrapper {
-        max-height: 140px; /* ~5 lines of text */
+        max-height: 140px;
+        /* ~5 lines of text */
         overflow: hidden;
         transition: max-height 0.5s ease;
         position: relative;
     }
+
     .collapsible-wrapper.expanded {
-        max-height: 1200px; /* Enough for maps and long text */
+        max-height: 1200px;
+        /* Enough for maps and long text */
     }
+
     /* Fade effect for collapsed content */
     .collapsible-wrapper::after {
         content: '';
@@ -73,13 +83,16 @@ title: Gallery
         left: 0;
         right: 0;
         height: 50px;
-        background: linear-gradient(transparent, #0f172a); /* Matches background color */
+        background: linear-gradient(transparent, #0f172a);
+        /* Matches background color */
         transition: 0.3s;
         pointer-events: none;
     }
+
     .collapsible-wrapper.expanded::after {
         opacity: 0;
     }
+
     .map-container {
         width: 100%;
         height: 450px;
@@ -89,26 +102,111 @@ title: Gallery
         margin-bottom: 20px;
         background: #1e293b;
     }
+
     /* Smaller markdown titles in tabs */
-    .collapsible-inner h1, .collapsible-inner h2 {
+    .collapsible-inner h1,
+    .collapsible-inner h2 {
         font-size: 1.4rem !important;
         margin-top: 15px;
         margin-bottom: 10px;
         color: var(--accent);
     }
+
     .collapsible-inner h3 {
         font-size: 1.1rem !important;
     }
+
     .collapsible-inner p {
         font-size: 0.9rem;
         line-height: 1.5;
+    }
+
+    /* Custom Dropdown Styles */
+    .custom-picker {
+        position: relative;
+        width: min(100%, 400px);
+        margin: 0 auto;
+        text-align: left;
+        z-index: 1100;
+    }
+    .picker-trigger {
+        background: #1e293b;
+        color: #fff;
+        border: 1px solid var(--glass-border);
+        padding: 8px 18px; /* Decreased padding */
+        border-radius: 50px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.75rem; /* Decreased font size */
+        transition: 0.3s;
+        min-height: 40px;
+    }
+    .picker-trigger:hover {
+        border-color: var(--accent);
+        background: rgba(255,255,255,0.02);
+    }
+    .picker-trigger.active {
+        border-color: var(--accent);
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+    .picker-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #1e293b;
+        border: 1px solid var(--glass-border);
+        border-top: none;
+        border-radius: 0 0 20px 20px;
+        max-height: 350px;
+        overflow-y: auto;
+        display: none;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        scrollbar-width: thin;
+        scrollbar-color: var(--accent) transparent;
+    }
+    .picker-dropdown::-webkit-scrollbar {
+        width: 6px;
+    }
+    .picker-dropdown::-webkit-scrollbar-thumb {
+        background: var(--accent);
+        border-radius: 10px;
+    }
+    .picker-dropdown.show {
+        display: block;
+    }
+    .picker-group {
+        padding: 5px 0 2px;
+    }
+    .picker-group-label {
+        color: var(--accent);
+        font-weight: 800;
+        font-size: 0.7rem;
+        padding: 8px 15px 4px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: 1; /* Full opacity for better visibility */
+    }
+    .picker-item {
+        color: #fff;
+        padding: 4px 15px 4px 45px; /* Increased indentation, decreased padding */
+        cursor: pointer;
+        font-size: 0.7rem; /* Decreased font size */
+        transition: 0.2s;
+    }
+    .picker-item:hover {
+        background: rgba(255,255,255,0.05);
+        color: var(--accent);
     }
 </style>
 
 <section class="hero" style="min-height: 200px; padding-top: 120px;">
     <div class="hero-content">
         <h1>Gallery</h1>
-        <p>Explore the beauty of New Hampshire through our lens.</p>
+        <p>Explore New Hampshire Beauty through our lens.</p>
     </div>
 </section>
 
@@ -116,10 +214,18 @@ title: Gallery
     <!-- Gallery Picker -->
     <div class="glass-content" style="margin-bottom: 30px; text-align: center;">
         <h3 style="color: var(--accent); margin-bottom: 20px;">Select a Collection</h3>
-        <select id="gallery-picker"
-            style="background: #1e293b; color: #fff; border: 1px solid var(--glass-border); padding: 12px 25px; border-radius: 50px; font-family: 'Inter', sans-serif; cursor: pointer; outline: none; width: min(100%, 400px); appearance: auto;">
-            <option value="" disabled selected style="background: #1e293b; color: #fff;">-- Select a Gallery --</option>
-        </select>
+        
+        <!-- Custom Custom Dropdown -->
+        <div class="custom-picker">
+            <div id="picker-trigger" class="picker-trigger">
+                <span id="selected-label">-- Select a Gallery --</span>
+                <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem;"></i>
+            </div>
+            <div id="picker-dropdown" class="picker-dropdown">
+                <!-- Data populated via JS -->
+            </div>
+        </div>
+
         <div id="api-notice" style="display: none; margin-top: 15px; font-size: 0.8rem; color: var(--accent);">
             <i class="fa-solid fa-triangle-exclamation"></i> API Key required for live updates.
             <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color: #fff;">Get one
@@ -134,9 +240,10 @@ title: Gallery
             <div id="tabs-middle-divider" class="content-divider" style="margin: 10px 0; display: none;"></div>
             <div id="map-tabs-row" style="display: flex; gap: 5px; flex-wrap: wrap;"></div>
         </div>
-        
+
         <div style="display: flex; justify-content: center; margin-bottom: 25px;">
-            <button id="jump-to-images" style="background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); color: #fff; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.85rem; transition: 0.3s; display: flex; align-items: center; gap: 8px;">
+            <button id="jump-to-images"
+                style="background: rgba(255,255,255,0.1); border: 1px solid var(--glass-border); color: #fff; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-family: 'Inter', sans-serif; font-size: 0.85rem; transition: 0.3s; display: flex; align-items: center; gap: 8px;">
                 Jump to Images <i class="fa-solid fa-images"></i>
             </button>
         </div>
@@ -153,9 +260,10 @@ title: Gallery
         style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; padding: 0; scroll-margin-top: 100px;">
         <!-- Dynamic content -->
     </div>
-    
+
     <!-- Floating Back to Top Button -->
-    <button id="back-to-top" style="position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px; background: var(--accent); color: #000; border: none; border-radius: 12px; cursor: pointer; display: none; align-items: center; justify-content: center; font-size: 1.2rem; z-index: 1000; box-shadow: 0 10px 25px rgba(0,0,0,0.3); transition: 0.3s;">
+    <button id="back-to-top"
+        style="position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px; background: var(--accent); color: #000; border: none; border-radius: 12px; cursor: pointer; display: none; align-items: center; justify-content: center; font-size: 1.2rem; z-index: 1000; box-shadow: 0 10px 25px rgba(0,0,0,0.3); transition: 0.3s;">
         <i class="fa-solid fa-arrow-up"></i>
     </button>
 
@@ -165,28 +273,32 @@ title: Gallery
         <!-- Close Button -->
         <span id="close-modal"
             style="position: absolute; top: 30px; right: 40px; color: #fff; font-size: 40px; cursor: pointer; z-index: 2005;">&times;</span>
-        
+
         <!-- Metadata Toggle -->
-        <div id="metadata-toggle" style="position: absolute; top: 35px; right: 100px; color: #fff; font-size: 1.2rem; cursor: pointer; z-index: 2005; background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 20px; transition: 0.3s;">
+        <div id="metadata-toggle"
+            style="position: absolute; top: 35px; right: 100px; color: #fff; font-size: 1.2rem; cursor: pointer; z-index: 2005; background: rgba(255,255,255,0.1); padding: 8px 15px; border-radius: 20px; transition: 0.3s;">
             <i class="fa-solid fa-circle-info"></i> <span style="font-size: 0.9rem; margin-left: 5px;">Stats</span>
         </div>
 
         <!-- Navigation Arrows -->
-        <div id="prev-media" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #fff; font-size: 40px; cursor: pointer; z-index: 2001; opacity: 0.6; padding: 20px;">
+        <div id="prev-media"
+            style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #fff; font-size: 40px; cursor: pointer; z-index: 2001; opacity: 0.6; padding: 20px;">
             <i class="fa-solid fa-chevron-left"></i>
         </div>
-        <div id="next-media" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #fff; font-size: 40px; cursor: pointer; z-index: 2001; opacity: 0.6; padding: 20px;">
+        <div id="next-media"
+            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #fff; font-size: 40px; cursor: pointer; z-index: 2001; opacity: 0.6; padding: 20px;">
             <i class="fa-solid fa-chevron-right"></i>
         </div>
 
         <!-- Metadata Overlay (Lower Left) -->
-        <div id="metadata-overlay" style="position: absolute; bottom: 80px; left: 30px; color: #fff; font-family: 'Inter', sans-serif; background: rgba(0,0,0,0.6); padding: 15px 20px; border-radius: 15px; z-index: 2002; display: none; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px);">
+        <div id="metadata-overlay"
+            style="position: absolute; bottom: 80px; left: 30px; color: #fff; font-family: 'Inter', sans-serif; background: rgba(0,0,0,0.6); padding: 15px 20px; border-radius: 15px; z-index: 2002; display: none; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px);">
             <!-- Stats populated here -->
         </div>
 
         <div id="modal-content"
             style="max-width: 85%; max-height: 85%; display: flex; align-items: center; justify-content: center;"></div>
-        
+
         <!-- Caption Overlay -->
         <div id="modal-caption"
             style="position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); color: #fff; font-family: 'Inter', sans-serif; background: rgba(0,0,0,0.5); padding: 10px 25px; border-radius: 30px; z-index: 2002;">
@@ -198,14 +310,13 @@ title: Gallery
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <script>
-    const API_KEY = 'AIzaSyB4KXMciiR9YisJ_1M2C5-EiiyeFJPWSlw'; 
+    const API_KEY = 'AIzaSyB4KXMciiR9YisJ_1M2C5-EiiyeFJPWSlw';
     const ROOT_ID = '1EfIJvPEiJp48qs55RYypFcFHTJHGjqCX';
 
     let currentMediaList = [];
     let currentIndex = 0;
     let showMetadata = false;
 
-    const picker = document.getElementById('gallery-picker');
     const grid = document.getElementById('gallery-grid');
     const descArea = document.getElementById('gallery-description');
     const modal = document.getElementById('media-modal');
@@ -224,7 +335,7 @@ title: Gallery
     document.addEventListener('DOMContentLoaded', () => {
         if (!API_KEY) {
             document.getElementById('api-notice').style.display = 'block';
-            picker.innerHTML = '<option value="" disabled selected>API Key missing in gallery.html</option>';
+            document.getElementById('selected-label').textContent = 'API Key missing';
             return;
         }
         initGallery();
@@ -232,14 +343,18 @@ title: Gallery
 
     async function initGallery() {
         try {
+            const dropdown = document.getElementById('picker-dropdown');
+            const trigger = document.getElementById('picker-trigger');
+            const label = document.getElementById('selected-label');
+
             // Load Dynamic Groups
             let groupNames = [];
             try {
                 const gResp = await fetch('assets/galleryGroups.txt');
                 const gText = await gResp.text();
                 groupNames = gText.split('\n')
-                                  .map(g => g.trim())
-                                  .filter(g => g && g.toLowerCase() !== 'other');
+                    .map(g => g.trim())
+                    .filter(g => g && g.toLowerCase() !== 'other');
             } catch (e) {
                 console.warn('Gallery groups file not found or failed to load');
             }
@@ -250,8 +365,8 @@ title: Gallery
 
             if (data.error) throw new Error(data.error.message);
 
-            const folders = data.files.filter(f => 
-                f.mimeType === 'application/vnd.google-apps.folder' || 
+            const folders = data.files.filter(f =>
+                f.mimeType === 'application/vnd.google-apps.folder' ||
                 f.mimeType === 'application/vnd.google-apps.shortcut'
             );
 
@@ -261,7 +376,7 @@ title: Gallery
                 const name = f.name;
                 const match = name.match(/^(\d{4})\s+(.*)/);
                 const year = match ? parseInt(match[1]) : 0;
-                
+
                 let assignedGroup = "Other";
                 for (const gName of groupNames) {
                     if (name.toLowerCase().includes(gName.toLowerCase())) {
@@ -274,40 +389,51 @@ title: Gallery
                 groups[assignedGroup].push({ id: f.id, name, year });
             });
 
-            picker.innerHTML = '<option value="" disabled selected style="background: #1e293b; color: #fff;">-- Select a Gallery --</option>';
-            
-            // Helper to render groups
-            const renderGroup = (label, items) => {
+            dropdown.innerHTML = '';
+
+            const renderGroup = (groupLabel, items) => {
                 if (!items || items.length === 0) return;
-                
-                const header = document.createElement('option');
-                header.disabled = true;
-                header.textContent = label;
-                header.style.background = '#0f172a';
-                header.style.color = 'var(--accent)';
-                header.style.fontWeight = 'bold';
-                picker.appendChild(header);
+
+                const header = document.createElement('div');
+                header.className = 'picker-group-label';
+                header.textContent = groupLabel;
+                dropdown.appendChild(header);
 
                 items.sort((a, b) => (b.year - a.year) || a.name.localeCompare(b.name)).forEach(item => {
-                    const option = document.createElement('option');
-                    option.value = item.id;
-                    option.textContent = "      " + item.name; // Increased indentation
-                    option.style.background = '#1e293b';
-                    option.style.color = '#fff';
-                    picker.appendChild(option);
+                    const div = document.createElement('div');
+                    div.className = 'picker-item';
+                    div.textContent = item.name;
+                    div.onclick = () => {
+                        label.textContent = item.name;
+                        dropdown.classList.remove('show');
+                        trigger.classList.remove('active');
+                        loadFolder(item.id);
+                    };
+                    dropdown.appendChild(div);
                 });
             };
 
-            // 1. Render Defined Groups (already sorted in the file)
+            // Render groups
             groupNames.forEach(g => renderGroup(g, groups[g]));
-
-            // 2. Render 'Other' Group
             renderGroup("Other", groups["Other"]);
 
-            picker.addEventListener('change', (e) => loadFolder(e.target.value));
+            // Toggle logic
+            trigger.onclick = (e) => {
+                e.stopPropagation();
+                trigger.classList.toggle('active');
+                dropdown.classList.toggle('show');
+            };
+
+            // Close outside
+            window.addEventListener('click', () => {
+                dropdown.classList.remove('show');
+                trigger.classList.remove('active');
+            });
 
         } catch (err) {
-            picker.innerHTML = `<option disabled selected>Error: ${err.message}</option>`;
+            console.error('Gallery init failed:', err);
+            const trigger = document.getElementById('picker-trigger');
+            if (trigger) trigger.innerHTML = `<span style="color:red">Error: ${err.message}</span>`;
         }
     }
 
@@ -315,7 +441,7 @@ title: Gallery
         grid.innerHTML = '<div style="text-align: center; width: 100%; grid-column: 1/-1;"><i class="fa-solid fa-spinner fa-spin"></i> Loading assets...</div>';
         descArea.style.display = 'none';
         currentMediaList = [];
-        
+
         try {
             // Include imageMediaMetadata and videoMediaMetadata in request
             const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,webContentLink,imageMediaMetadata,videoMediaMetadata)&key=${API_KEY}`;
@@ -330,16 +456,16 @@ title: Gallery
                 const textRow = document.getElementById('text-tabs-row');
                 const mapRow = document.getElementById('map-tabs-row');
                 const midDiv = document.getElementById('tabs-middle-divider');
-                
+
                 textRow.innerHTML = '';
                 mapRow.innerHTML = '';
                 midDiv.style.display = (textFiles.length > 0 && mapFiles.length > 0) ? 'block' : 'none';
-                
+
                 tabsContent.innerHTML = '';
                 descArea.style.display = 'block';
 
                 let tabIdx = 0;
-                
+
                 // Render Text Tabs
                 textFiles.forEach((file) => {
                     createTabElements(file, tabIdx++, tabIdx === 1, textRow);
@@ -352,8 +478,8 @@ title: Gallery
             }
 
             currentMediaList = files.filter(f => f.mimeType.startsWith('image/') || f.mimeType.startsWith('video/'))
-                                  .sort((a, b) => a.name.localeCompare(b.name));
-            
+                .sort((a, b) => a.name.localeCompare(b.name));
+
             grid.innerHTML = '';
             currentMediaList.forEach((file, index) => renderMediaCard(file, index));
 
@@ -403,7 +529,7 @@ title: Gallery
         btn.classList.add('active');
         const pane = document.getElementById(tabId);
         pane.classList.add('active');
-        
+
         // Ensure "Read More" logic is recalculated if it was missed
         const toggle = pane.querySelector('.desc-toggle-btn');
         const wrapper = pane.querySelector('.collapsible-wrapper');
@@ -429,7 +555,7 @@ title: Gallery
         try {
             const url = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
             const resp = await fetch(url);
-            
+
             if (!resp.ok) {
                 const errData = await resp.json().catch(() => ({ error: { message: resp.statusText } }));
                 throw new Error(errData.error?.message || `HTTP ${resp.status}`);
@@ -438,7 +564,7 @@ title: Gallery
             const text = await resp.text();
             const contentHtml = marked.parse(text);
             initCollapsiblePane(pane, contentHtml);
-            
+
         } catch (e) {
             console.error('Markdown load error:', e);
             pane.innerHTML = `
@@ -456,20 +582,20 @@ title: Gallery
 
     async function loadMapTab(file, pane) {
         const containerId = `map-${file.id}`;
-        
+
         try {
             const url = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
             const resp = await fetch(url);
             if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
             const data = await resp.text();
-            
+
             const mapHtml = `<div id="${containerId}" class="map-container"></div>`;
             initCollapsiblePane(pane, mapHtml, true); // true = autoExpand for maps
-            
+
             setTimeout(() => {
                 const mapDiv = document.getElementById(containerId);
                 if (!mapDiv) return;
-                
+
                 const map = L.map(containerId).setView([43.0, -71.5], 10);
                 L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
                     maxZoom: 17,
@@ -478,7 +604,7 @@ title: Gallery
 
                 mapDiv._leaflet_map = map;
 
-                const layer = file.name.endsWith('.gpx') 
+                const layer = file.name.endsWith('.gpx')
                     ? new L.GPX(data, {
                         async: true,
                         marker_options: {
@@ -489,11 +615,11 @@ title: Gallery
                     })
                     : omnivore.kml(data);
 
-                layer.on('loaded', function(e) {
+                layer.on('loaded', function (e) {
                     map.fitBounds(e.target ? e.target.getBounds() : layer.getBounds());
                     mapDiv._leaflet_track = e.target || layer;
                 }).addTo(map);
-                
+
                 if (file.name.endsWith('.kml')) {
                     // Omnivore KML doesn't always fire 'loaded' same way
                     setTimeout(() => map.fitBounds(layer.getBounds()), 1000);
@@ -541,7 +667,7 @@ title: Gallery
                 wrapper.classList.add('expanded');
                 toggle.innerHTML = 'Read Less <i class="fa-solid fa-chevron-up" style="font-size: 0.7rem; margin-left: 5px;"></i>';
             }
-            
+
             // Fix map if it was just expanded
             const mapDiv = wrapper.querySelector('.map-container');
             if (mapDiv && mapDiv._leaflet_map) {
@@ -574,7 +700,7 @@ title: Gallery
     function openMedia(file) {
         modalContent.innerHTML = '';
         modalCaption.textContent = file.name;
-        
+
         if (file.mimeType.startsWith('image/')) {
             const img = document.createElement('img');
             img.src = `https://lh3.googleusercontent.com/d/${file.id}=s0`;
@@ -592,7 +718,7 @@ title: Gallery
         const wasOpen = modal.style.display === 'flex';
         modal.style.display = 'flex';
         metaOverlay.style.display = showMetadata ? 'block' : 'none';
-        
+
         // Push state for back button handling ONLY if not already open
         if (!wasOpen) {
             history.pushState({ modalOpen: true }, '');
@@ -621,7 +747,7 @@ title: Gallery
     function formatShutter(speed) {
         if (!speed) return '';
         if (speed < 1) {
-            return `1/${Math.round(1/speed)}`;
+            return `1/${Math.round(1 / speed)}`;
         }
         return speed;
     }
@@ -656,7 +782,7 @@ title: Gallery
     prevBtn.addEventListener('click', (e) => { e.stopPropagation(); showPrev(); });
     nextBtn.addEventListener('click', (e) => { e.stopPropagation(); showNext(); });
     closeModal.addEventListener('click', closeModalHandler);
-    
+
     window.addEventListener('click', (e) => { if (e.target === modal) closeModalHandler(); });
 
     window.addEventListener('popstate', (e) => {

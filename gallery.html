@@ -149,17 +149,18 @@ title: Gallery
     }
     .picker-trigger.active {
         border-color: var(--accent);
+        border-bottom-color: transparent; /* Seamless link to dropdown */
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
     }
     .picker-dropdown {
         position: absolute;
-        top: 100%;
+        top: calc(100% - 1px); /* Remove gap */
         left: 0;
         right: 0;
         background: #1e293b;
-        border: 1px solid var(--glass-border);
-        border-top: none;
+        border: 1px solid var(--accent); /* Sync border color */
+        border-top: none; /* Seamless junction */
         border-radius: 0 0 20px 20px;
         max-height: 350px;
         overflow-y: auto;
@@ -167,6 +168,7 @@ title: Gallery
         box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         scrollbar-width: thin;
         scrollbar-color: var(--accent) transparent;
+        z-index: 2000;
     }
     .picker-dropdown::-webkit-scrollbar {
         width: 6px;
@@ -212,7 +214,7 @@ title: Gallery
 
 <div class="main-content" style="max-width: 1200px; margin: 0 auto; padding: 0 20px 50px;">
     <!-- Gallery Picker -->
-    <div class="glass-content" style="margin-bottom: 30px; text-align: center;">
+    <div class="glass-content" style="margin-bottom: 30px; text-align: center; position: relative; z-index: 1200;">
         <h3 style="color: var(--accent); margin-bottom: 20px;">Select a Collection</h3>
         
         <!-- Custom Custom Dropdown -->

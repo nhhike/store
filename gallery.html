@@ -39,7 +39,7 @@ title: Gallery
         border-radius: 8px 8px 0 0;
         cursor: pointer;
         font-family: 'Outfit', sans-serif;
-        font-size: 0.75rem;
+        font-size: 0.73rem;
         transition: 0.3s;
         border-bottom: none;
         opacity: 0.6;
@@ -71,8 +71,8 @@ title: Gallery
     }
 
     .collapsible-wrapper.expanded {
-        max-height: 1200px;
-        /* Enough for maps and long text */
+        max-height: 10000px;
+        /* Ensure even the longest files are fully visible */
     }
 
     /* Fade effect for collapsed content */
@@ -106,18 +106,18 @@ title: Gallery
     /* Smaller markdown titles in tabs */
     .collapsible-inner h1,
     .collapsible-inner h2 {
-        font-size: 1.4rem !important;
+        font-size: 1.2rem !important;
         margin-top: 15px;
         margin-bottom: 10px;
         color: var(--accent);
     }
 
     .collapsible-inner h3 {
-        font-size: 1.1rem !important;
+        font-size: 1.0rem !important;
     }
 
     .collapsible-inner p {
-        font-size: 0.9rem;
+        font-size: 0.82rem;
         line-height: 1.5;
     }
 
@@ -235,7 +235,7 @@ title: Gallery
         </div>
     </div>
 
-    <div id="gallery-description" class="glass-content" style="margin-bottom: 30px; display: none; position: relative;">
+    <div id="gallery-description" class="glass-content" style="margin-bottom: 30px; display: none; position: relative; padding: 25px 15px;">
         <!-- Tab Navigation Grouped Vertically -->
         <div id="tabs-header" style="display: flex; flex-direction: column; gap: 5px; margin-bottom: 20px;">
             <div id="text-tabs-row" style="display: flex; gap: 5px; flex-wrap: wrap;"></div>

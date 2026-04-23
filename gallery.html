@@ -117,7 +117,7 @@ title: Gallery
     <div class="glass-content" style="margin-bottom: 30px; text-align: center;">
         <h3 style="color: var(--accent); margin-bottom: 20px;">Select a Collection</h3>
         <select id="gallery-picker"
-            style="background: #1e293b; color: #fff; border: 1px solid var(--glass-border); padding: 12px 25px; border-radius: 30px; font-family: 'Inter', sans-serif; cursor: pointer; outline: none; width: min(100%, 400px); appearance: auto;">
+            style="background: #1e293b; color: #fff; border: 1px solid var(--glass-border); padding: 12px 25px; border-radius: 50px; font-family: 'Inter', sans-serif; cursor: pointer; outline: none; width: min(100%, 400px); appearance: auto;">
             <option value="" disabled selected style="background: #1e293b; color: #fff;">-- Select a Gallery --</option>
         </select>
         <div id="api-notice" style="display: none; margin-top: 15px; font-size: 0.8rem; color: var(--accent);">
@@ -232,6 +232,18 @@ title: Gallery
 
     async function initGallery() {
         try {
+            // Load Dynamic Groups
+            let groupNames = [];
+            try {
+                const gResp = await fetch('assets/galleryGroups.txt');
+                const gText = await gResp.text();
+                groupNames = gText.split('\n')
+                                  .map(g => g.trim())
+                                  .filter(g => g && g.toLowerCase() !== 'other');
+            } catch (e) {
+                console.warn('Gallery groups file not found or failed to load');
+            }
+
             const url = `https://www.googleapis.com/drive/v3/files?q='${ROOT_ID}'+in+parents+and+trashed=false&fields=files(id,name,mimeType)&key=${API_KEY}`;
             const response = await fetch(url);
             const data = await response.json();
@@ -243,74 +255,54 @@ title: Gallery
                 f.mimeType === 'application/vnd.google-apps.shortcut'
             );
 
-            // Group and Sort Folders with improved logic
-            const processed = folders.map(f => {
+            // Group and Sort Folders
+            const groups = {};
+            folders.forEach(f => {
                 const name = f.name;
                 const match = name.match(/^(\d{4})\s+(.*)/);
                 const year = match ? parseInt(match[1]) : 0;
-                const rest = match ? match[2].trim() : name.trim();
-                // Base name is text before hyphen or the whole string
-                const base = rest.split(" - ")[0].trim();
-                return { id: f.id, name, year, rest, base };
-            });
-
-            // Determine root groups (shortest base names that match others)
-            const uniqueBases = Array.from(new Set(processed.map(f => f.base))).sort((a, b) => a.length - b.length);
-            const baseToRoot = {};
-            uniqueBases.forEach(b => {
-                if (!baseToRoot[b]) {
-                    baseToRoot[b] = b;
-                    // Find all other bases that start with this one followed by space or end
-                    uniqueBases.forEach(other => {
-                        if (other !== b && (other.startsWith(b + " ") || other === b)) {
-                            if (!baseToRoot[other]) baseToRoot[other] = b;
-                        }
-                    });
+                
+                let assignedGroup = "Other";
+                for (const gName of groupNames) {
+                    if (name.toLowerCase().includes(gName.toLowerCase())) {
+                        assignedGroup = gName;
+                        break;
+                    }
                 }
+
+                if (!groups[assignedGroup]) groups[assignedGroup] = [];
+                groups[assignedGroup].push({ id: f.id, name, year });
             });
 
-            const groups = {};
-            processed.forEach(f => {
-                const groupKey = baseToRoot[f.base] || f.base;
-                if (!groups[groupKey]) groups[groupKey] = [];
-                groups[groupKey].push(f);
-            });
-
-            const sortedGroupKeys = Object.keys(groups).sort();
             picker.innerHTML = '<option value="" disabled selected style="background: #1e293b; color: #fff;">-- Select a Gallery --</option>';
             
-            sortedGroupKeys.forEach((loc, idx) => {
-                // 1. Group Header (Disabled)
+            // Helper to render groups
+            const renderGroup = (label, items) => {
+                if (!items || items.length === 0) return;
+                
                 const header = document.createElement('option');
                 header.disabled = true;
-                header.textContent = loc;
+                header.textContent = label;
                 header.style.background = '#0f172a';
                 header.style.color = 'var(--accent)';
                 header.style.fontWeight = 'bold';
                 picker.appendChild(header);
 
-                // 2. Group Items (Sorted by year descending)
-                groups[loc].sort((a, b) => (b.year - a.year) || a.name.localeCompare(b.name)).forEach(item => {
+                items.sort((a, b) => (b.year - a.year) || a.name.localeCompare(b.name)).forEach(item => {
                     const option = document.createElement('option');
                     option.value = item.id;
-                    option.textContent = "   " + item.name; // Indent for visual hierarchy
+                    option.textContent = "      " + item.name; // Increased indentation
                     option.style.background = '#1e293b';
                     option.style.color = '#fff';
                     picker.appendChild(option);
                 });
+            };
 
-                // 3. Horizontal Divider (Between groups, not last)
-                if (idx < sortedGroupKeys.length - 1) {
-                    const separator = document.createElement('option');
-                    separator.disabled = true;
-                    separator.textContent = "──────────────────────────────";
-                    separator.style.background = '#1e293b';
-                    separator.style.color = 'rgba(255,255,255,0.15)';
-                    separator.style.fontSize = '8px';
-                    separator.style.textAlign = 'center';
-                    picker.appendChild(separator);
-                }
-            });
+            // 1. Render Defined Groups (already sorted in the file)
+            groupNames.forEach(g => renderGroup(g, groups[g]));
+
+            // 2. Render 'Other' Group
+            renderGroup("Other", groups["Other"]);
 
             picker.addEventListener('change', (e) => loadFolder(e.target.value));
 

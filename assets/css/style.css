@@ -362,6 +362,7 @@ body {
 @media screen and (max-width: 900px) {
     .nav-container { justify-content: flex-start; gap: 20px; }
     .nav-branding { order: 2; }
+    .nav-home { display: none; }
     .hamburger { display: flex; order: 1; margin-right: 10px; }
     .nav-menu { display: none; }
     

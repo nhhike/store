@@ -508,7 +508,11 @@ title: Gallery
     function createTabElements(file, idx, isFirst, container) {
         const btn = document.createElement('button');
         btn.className = `tab-btn ${isFirst ? 'active' : ''}`;
-        btn.textContent = file.cleanName;
+        
+        // Add icons based on file type
+        const iconClass = file.name.endsWith('.md') ? 'fa-regular fa-file-lines' : 'fa-solid fa-satellite-dish';
+        btn.innerHTML = `<i class="${iconClass}" style="margin-right: 6px; opacity: 0.8;"></i> ${file.cleanName}`;
+        
         btn.dataset.tabId = `tab-${idx}`;
         btn.addEventListener('click', () => switchTab(btn, `tab-${idx}`));
         container.appendChild(btn);
@@ -591,7 +595,15 @@ title: Gallery
             if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
             const data = await resp.text();
 
-            const mapHtml = `<div id="${containerId}" class="map-container"></div>`;
+            const mapHtml = `
+                <div style="position: relative;">
+                    <button onclick="downloadFile('${file.id}', '${file.name}')" 
+                        style="position: absolute; top: 15px; right: 15px; z-index: 1000; background: var(--accent); color: #000; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.7rem; cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: 0.3s;"
+                        onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        <i class="fa-solid fa-download"></i> Download GPX
+                    </button>
+                    <div id="${containerId}" class="map-container"></div>
+                </div>`;
             initCollapsiblePane(pane, mapHtml, true); // true = autoExpand for maps
 
             setTimeout(() => {
@@ -835,4 +847,14 @@ title: Gallery
             else if (e.key.toLowerCase() === 'i') metaToggle.click();
         }
     });
+
+    function downloadFile(fileId, fileName) {
+        const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${API_KEY}`;
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
 </script>

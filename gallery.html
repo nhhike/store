@@ -711,14 +711,25 @@ title: Gallery
         grid.appendChild(card);
     }
 
+    let zoomScale = 1;
+    let zoomPosX = 0;
+    let zoomPosY = 0;
+    let lastTapTime = 0;
+
     function openMedia(file) {
         modalContent.innerHTML = '';
         modalCaption.textContent = file.name;
+        zoomScale = 1; zoomPosX = 0; zoomPosY = 0; // Reset state
 
         if (file.mimeType.startsWith('image/')) {
             const img = document.createElement('img');
             img.src = `https://lh3.googleusercontent.com/d/${file.id}=s0`;
             img.style.maxWidth = '100%'; img.style.maxHeight = '100%'; img.style.borderRadius = '8px';
+            img.style.transition = 'transform 0.1s ease-out';
+            img.style.touchAction = 'none'; // Prevent page scrolling while zooming image
+            img.style.cursor = 'zoom-in';
+
+            setupZoom(img);
             modalContent.appendChild(img);
             renderMetadata(file.imageMediaMetadata);
         } else if (file.mimeType.startsWith('video/')) {
@@ -737,6 +748,69 @@ title: Gallery
         if (!wasOpen) {
             history.pushState({ modalOpen: true }, '');
         }
+    }
+
+    function setupZoom(img) {
+        let evCache = [];
+        let prevDiff = -1;
+
+        const updateTransform = (smooth = false) => {
+            img.style.transition = smooth ? 'transform 0.3s ease' : 'none';
+            img.style.transform = `translate(${zoomPosX}px, ${zoomPosY}px) scale(${zoomScale})`;
+        };
+
+        img.addEventListener('pointerdown', (e) => {
+            // Double Tap Check
+            const now = Date.now();
+            if (now - lastTapTime < 300) {
+                zoomScale = 1; zoomPosX = 0; zoomPosY = 0;
+                updateTransform(true);
+                lastTapTime = 0;
+                return;
+            }
+            lastTapTime = now;
+            
+            evCache.push(e);
+            img.setPointerCapture(e.pointerId);
+        });
+
+        img.addEventListener('pointermove', (e) => {
+            const index = evCache.findIndex(ev => ev.pointerId === e.pointerId);
+            if (index < 0) return;
+            evCache[index] = e;
+
+            if (evCache.length === 2) {
+                // Pinch Zoom
+                const dx = evCache[0].clientX - evCache[1].clientX;
+                const dy = evCache[0].clientY - evCache[1].clientY;
+                const curDiff = Math.sqrt(dx * dx + dy * dy);
+
+                if (prevDiff > 0) {
+                    const delta = curDiff - prevDiff;
+                    zoomScale = Math.max(1, Math.min(zoomScale + delta * 0.01, 5));
+                    updateTransform();
+                }
+                prevDiff = curDiff;
+            } else if (evCache.length === 1 && zoomScale > 1) {
+                // Pan
+                const dx = e.clientX - evCache[0].clientX;
+                const dy = e.clientY - evCache[0].clientY;
+                // Move based on delta, but adjust for scale
+                zoomPosX += dx;
+                zoomPosY += dy;
+                updateTransform();
+            }
+        });
+
+        img.addEventListener('pointerup', (e) => {
+            evCache = evCache.filter(ev => ev.pointerId !== e.pointerId);
+            if (evCache.length < 2) prevDiff = -1;
+        });
+
+        img.addEventListener('pointercancel', () => {
+            evCache = [];
+            prevDiff = -1;
+        });
     }
 
     function renderMetadata(meta) {

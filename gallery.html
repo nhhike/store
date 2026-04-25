@@ -751,65 +751,63 @@ title: Gallery
     }
 
     function setupZoom(img) {
-        let evCache = [];
-        let prevDiff = -1;
+        let initialDist = 0;
+        let initialScale = 1;
+        let lastTouchEndTime = 0;
 
         const updateTransform = (smooth = false) => {
             img.style.transition = smooth ? 'transform 0.3s ease' : 'none';
             img.style.transform = `translate(${zoomPosX}px, ${zoomPosY}px) scale(${zoomScale})`;
         };
 
-        img.addEventListener('pointerdown', (e) => {
+        img.addEventListener('touchstart', (e) => {
             // Double Tap Check
             const now = Date.now();
             if (now - lastTapTime < 300) {
                 zoomScale = 1; zoomPosX = 0; zoomPosY = 0;
                 updateTransform(true);
                 lastTapTime = 0;
+                e.preventDefault();
                 return;
             }
             lastTapTime = now;
-            
-            evCache.push(e);
-            img.setPointerCapture(e.pointerId);
-        });
 
-        img.addEventListener('pointermove', (e) => {
-            const index = evCache.findIndex(ev => ev.pointerId === e.pointerId);
-            if (index < 0) return;
-            evCache[index] = e;
+            if (e.touches.length === 2) {
+                initialDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                initialScale = zoomScale;
+            } else if (e.touches.length === 1) {
+                img.startX = e.touches[0].clientX - zoomPosX;
+                img.startY = e.touches[0].clientY - zoomPosY;
+            }
+        }, { passive: false });
 
-            if (evCache.length === 2) {
-                // Pinch Zoom
-                const dx = evCache[0].clientX - evCache[1].clientX;
-                const dy = evCache[0].clientY - evCache[1].clientY;
-                const curDiff = Math.sqrt(dx * dx + dy * dy);
-
-                if (prevDiff > 0) {
-                    const delta = curDiff - prevDiff;
-                    zoomScale = Math.max(1, Math.min(zoomScale + delta * 0.01, 5));
-                    updateTransform();
-                }
-                prevDiff = curDiff;
-            } else if (evCache.length === 1 && zoomScale > 1) {
-                // Pan
-                const dx = e.clientX - evCache[0].clientX;
-                const dy = e.clientY - evCache[0].clientY;
-                // Move based on delta, but adjust for scale
-                zoomPosX += dx;
-                zoomPosY += dy;
+        img.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2) {
+                e.preventDefault();
+                const dist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                const scale = (dist / initialDist) * initialScale;
+                zoomScale = Math.max(1, Math.min(scale, 5));
+                updateTransform();
+            } else if (e.touches.length === 1 && zoomScale > 1) {
+                e.preventDefault();
+                zoomPosX = e.touches[0].clientX - img.startX;
+                zoomPosY = e.touches[0].clientY - img.startY;
                 updateTransform();
             }
-        });
+        }, { passive: false });
 
-        img.addEventListener('pointerup', (e) => {
-            evCache = evCache.filter(ev => ev.pointerId !== e.pointerId);
-            if (evCache.length < 2) prevDiff = -1;
-        });
-
-        img.addEventListener('pointercancel', () => {
-            evCache = [];
-            prevDiff = -1;
+        img.addEventListener('touchend', (e) => {
+            if (e.touches.length < 2) initialDist = 0;
+            if (e.touches.length === 1) {
+                img.startX = e.touches[0].clientX - zoomPosX;
+                img.startY = e.touches[0].clientY - zoomPosY;
+            }
         });
     }
 

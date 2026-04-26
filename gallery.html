@@ -784,76 +784,95 @@ title: Gallery
     }
 
     function setupZoom(img) {
+        // This function is now a placeholder as logic moved to modal-level
         img.draggable = false;
         img.style.userSelect = 'none';
-
-        const updateTransform = (smooth = false) => {
-            img.style.transition = smooth ? 'transform 0.3s cubic-bezier(0.2, 0, 0.2, 1)' : 'none';
-            img.style.transform = `translate(${zoomPosX}px, ${zoomPosY}px) scale(${zoomScale})`;
-            img.style.cursor = zoomScale > 1 ? 'grab' : 'zoom-in';
-        };
-
-        img.onwheel = (e) => {
-            e.preventDefault();
-            const delta = e.deltaY > 0 ? 0.8 : 1.25;
-            zoomScale = Math.max(1, Math.min(zoomScale * delta, 5));
-            updateTransform(true);
-        };
-
-        img.onpointerdown = (e) => {
-            e.preventDefault();
-            const now = Date.now();
-            if (now - lastTapTime < 300) {
-                zoomScale = 1; zoomPosX = 0; zoomPosY = 0;
-                updateTransform(true);
-                lastTapTime = 0;
-                return;
-            }
-            lastTapTime = now;
-
-            evCache.push(e);
-            img.setPointerCapture(e.pointerId);
-            img.lastPosX = e.clientX;
-            img.lastPosY = e.clientY;
-            if (zoomScale > 1) img.style.cursor = 'grabbing';
-        };
-
-        img.onpointermove = (e) => {
-            const index = evCache.findIndex(ev => ev.pointerId === e.pointerId);
-            if (index < 0) return;
-            e.preventDefault();
-            evCache[index] = e;
-
-            if (evCache.length === 2) {
-                const curDiff = Math.hypot(evCache[0].clientX - evCache[1].clientX, evCache[0].clientY - evCache[1].clientY);
-                if (prevDiff > 0) {
-                    const ratio = curDiff / prevDiff;
-                    zoomScale = Math.max(1, Math.min(zoomScale * ratio, 5));
-                    updateTransform();
-                }
-                prevDiff = curDiff;
-            } else if (evCache.length === 1 && zoomScale > 1) {
-                const dx = e.clientX - img.lastPosX;
-                const dy = e.clientY - img.lastPosY;
-                zoomPosX += dx;
-                zoomPosY += dy;
-                updateTransform();
-            }
-            img.lastPosX = e.clientX;
-            img.lastPosY = e.clientY;
-        };
-
-        const stopGesture = (e) => {
-            evCache = evCache.filter(ev => ev.pointerId !== e.pointerId);
-            if (evCache.length < 2) prevDiff = -1;
-            if (zoomScale > 1) img.style.cursor = 'grab'; else img.style.cursor = 'zoom-in';
-        };
-
-        img.onpointerup = stopGesture;
-        img.onpointercancel = stopGesture;
-        img.onpointerout = stopGesture;
-        img.onpointerleave = stopGesture;
     }
+
+    let evCache = [];
+    let prevDiff = -1;
+    let lastPosX = 0;
+    let lastPosY = 0;
+
+    const modalUpdateTransform = (smooth = false) => {
+        const img = modalContent.querySelector('img');
+        if (!img) return;
+        img.style.transition = smooth ? 'transform 0.3s cubic-bezier(0.2, 0, 0.2, 1)' : 'none';
+        img.style.transform = `translate(${zoomPosX}px, ${zoomPosY}px) scale(${zoomScale})`;
+        img.style.cursor = zoomScale > 1 ? 'grab' : 'zoom-in';
+    };
+
+    modal.onwheel = (e) => {
+        if (modal.style.display !== 'flex') return;
+        const img = modalContent.querySelector('img');
+        if (!img) return;
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? 0.8 : 1.25;
+        zoomScale = Math.max(1, Math.min(zoomScale * delta, 5));
+        modalUpdateTransform(true);
+    };
+
+    modal.onpointerdown = (e) => {
+        if (modal.style.display !== 'flex') return;
+        const img = modalContent.querySelector('img');
+        if (!img || e.target === closeModal) return;
+
+        const now = Date.now();
+        if (e.pointerType === 'touch' && now - lastTapTime < 300) {
+            zoomScale = 1; zoomPosX = 0; zoomPosY = 0;
+            modalUpdateTransform(true);
+            lastTapTime = 0;
+            return;
+        }
+        lastTapTime = now;
+
+        evCache.push(e);
+        modal.setPointerCapture(e.pointerId);
+        lastPosX = e.clientX;
+        lastPosY = e.clientY;
+        if (zoomScale > 1) img.style.cursor = 'grabbing';
+    };
+
+    modal.onpointermove = (e) => {
+        if (modal.style.display !== 'flex') return;
+        const index = evCache.findIndex(ev => ev.pointerId === e.pointerId);
+        if (index < 0) return;
+        
+        const img = modalContent.querySelector('img');
+        if (!img) return;
+        e.preventDefault();
+        evCache[index] = e;
+
+        if (evCache.length === 2) {
+            const curDiff = Math.hypot(evCache[0].clientX - evCache[1].clientX, evCache[0].clientY - evCache[1].clientY);
+            if (prevDiff > 0) {
+                const ratio = curDiff / prevDiff;
+                zoomScale = Math.max(1, Math.min(zoomScale * ratio, 5));
+                modalUpdateTransform();
+            }
+            prevDiff = curDiff;
+        } else if (evCache.length === 1 && zoomScale > 1) {
+            const dx = e.clientX - lastPosX;
+            const dy = e.clientY - lastPosY;
+            zoomPosX += dx;
+            zoomPosY += dy;
+            modalUpdateTransform();
+        }
+        lastPosX = e.clientX;
+        lastPosY = e.clientY;
+    };
+
+    const stopModalGesture = (e) => {
+        evCache = evCache.filter(ev => ev.pointerId !== e.pointerId);
+        if (evCache.length < 2) prevDiff = -1;
+        const img = modalContent.querySelector('img');
+        if (img) img.style.cursor = zoomScale > 1 ? 'grab' : 'zoom-in';
+    };
+
+    modal.onpointerup = stopModalGesture;
+    modal.onpointercancel = stopModalGesture;
+    modal.onpointerout = stopModalGesture;
+    modal.onpointerleave = stopModalGesture;
 
     function renderMetadata(meta) {
         if (!meta) {
@@ -918,7 +937,7 @@ title: Gallery
     window.addEventListener('popstate', (e) => {
         if (zoomScale > 1.05 && modal.style.display === 'flex') {
             zoomScale = 1; zoomPosX = 0; zoomPosY = 0;
-            updateTransform(true);
+            modalUpdateTransform(true);
             // Re-push state so the NEXT back button closes it
             history.pushState({ modalOpen: true }, '');
         } else {

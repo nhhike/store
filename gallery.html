@@ -815,7 +815,9 @@ title: Gallery
     modal.onpointerdown = (e) => {
         if (modal.style.display !== 'flex') return;
         const img = modalContent.querySelector('img');
-        if (!img || e.target === closeModal) return;
+        const isUI = e.target.closest('#prev-media') || e.target.closest('#next-media') || 
+                     e.target.closest('#close-modal') || e.target.closest('#metadata-toggle');
+        if (!img || isUI) return;
 
         const now = Date.now();
         if (e.pointerType === 'touch' && now - lastTapTime < 300) {

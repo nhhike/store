@@ -271,7 +271,7 @@ title: Gallery
 
     <!-- Media Modal -->
     <div id="media-modal"
-        style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+        style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(10px); touch-action: none;">
         <!-- Close Button -->
         <span id="close-modal"
             style="position: absolute; top: 30px; right: 40px; color: #fff; font-size: 40px; cursor: pointer; z-index: 2005;">&times;</span>
@@ -828,7 +828,7 @@ title: Gallery
         }
         lastTapTime = now;
 
-        evCache.push(e);
+        evCache.push({ pointerId: e.pointerId, clientX: e.clientX, clientY: e.clientY });
         modal.setPointerCapture(e.pointerId);
         lastPosX = e.clientX;
         lastPosY = e.clientY;
@@ -843,16 +843,20 @@ title: Gallery
         const img = modalContent.querySelector('img');
         if (!img) return;
         e.preventDefault();
-        evCache[index] = e;
 
         if (evCache.length === 2) {
-            const curDiff = Math.hypot(evCache[0].clientX - evCache[1].clientX, evCache[0].clientY - evCache[1].clientY);
+            // Use current move event + cached other pointer
+            const p1 = e.pointerId === evCache[0].pointerId ? e : evCache[0];
+            const p2 = e.pointerId === evCache[1].pointerId ? e : evCache[1];
+            
+            const curDiff = Math.hypot(p1.clientX - p2.clientX, p1.clientY - p2.clientY);
+            const prevDiff = Math.hypot(evCache[0].clientX - evCache[1].clientX, evCache[0].clientY - evCache[1].clientY);
+            
             if (prevDiff > 0) {
                 const ratio = curDiff / prevDiff;
                 zoomScale = Math.max(1, Math.min(zoomScale * ratio, 5));
                 modalUpdateTransform();
             }
-            prevDiff = curDiff;
         } else if (evCache.length === 1 && zoomScale > 1) {
             const dx = e.clientX - lastPosX;
             const dy = e.clientY - lastPosY;
@@ -860,13 +864,15 @@ title: Gallery
             zoomPosY += dy;
             modalUpdateTransform();
         }
+
+        evCache[index].clientX = e.clientX;
+        evCache[index].clientY = e.clientY;
         lastPosX = e.clientX;
         lastPosY = e.clientY;
     };
 
     const stopModalGesture = (e) => {
         evCache = evCache.filter(ev => ev.pointerId !== e.pointerId);
-        if (evCache.length < 2) prevDiff = -1;
         const img = modalContent.querySelector('img');
         if (img) img.style.cursor = zoomScale > 1 ? 'grab' : 'zoom-in';
     };

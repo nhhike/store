@@ -784,22 +784,24 @@ title: Gallery
     }
 
     function setupZoom(img) {
-        let evCache = [];
-        let prevDiff = -1;
+        img.draggable = false;
+        img.style.userSelect = 'none';
 
         const updateTransform = (smooth = false) => {
             img.style.transition = smooth ? 'transform 0.3s cubic-bezier(0.2, 0, 0.2, 1)' : 'none';
             img.style.transform = `translate(${zoomPosX}px, ${zoomPosY}px) scale(${zoomScale})`;
+            img.style.cursor = zoomScale > 1 ? 'grab' : 'zoom-in';
         };
 
         img.onwheel = (e) => {
             e.preventDefault();
-            const delta = e.deltaY > 0 ? 0.9 : 1.1;
+            const delta = e.deltaY > 0 ? 0.8 : 1.25;
             zoomScale = Math.max(1, Math.min(zoomScale * delta, 5));
             updateTransform(true);
         };
 
         img.onpointerdown = (e) => {
+            e.preventDefault();
             const now = Date.now();
             if (now - lastTapTime < 300) {
                 zoomScale = 1; zoomPosX = 0; zoomPosY = 0;
@@ -813,11 +815,13 @@ title: Gallery
             img.setPointerCapture(e.pointerId);
             img.lastPosX = e.clientX;
             img.lastPosY = e.clientY;
+            if (zoomScale > 1) img.style.cursor = 'grabbing';
         };
 
         img.onpointermove = (e) => {
             const index = evCache.findIndex(ev => ev.pointerId === e.pointerId);
             if (index < 0) return;
+            e.preventDefault();
             evCache[index] = e;
 
             if (evCache.length === 2) {
@@ -842,6 +846,7 @@ title: Gallery
         const stopGesture = (e) => {
             evCache = evCache.filter(ev => ev.pointerId !== e.pointerId);
             if (evCache.length < 2) prevDiff = -1;
+            if (zoomScale > 1) img.style.cursor = 'grab'; else img.style.cursor = 'zoom-in';
         };
 
         img.onpointerup = stopGesture;

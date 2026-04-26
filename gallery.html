@@ -753,6 +753,8 @@ title: Gallery
         modalContent.innerHTML = '';
         modalCaption.textContent = file.name;
         zoomScale = 1; zoomPosX = 0; zoomPosY = 0; // Reset state
+        document.body.style.overflow = 'hidden'; // Prevent background scroll
+        document.body.style.touchAction = 'none'; // Lock page zoom
 
         if (file.mimeType.startsWith('image/')) {
             const img = document.createElement('img');
@@ -802,12 +804,16 @@ title: Gallery
         img.style.cursor = zoomScale > 1 ? 'grab' : 'zoom-in';
     };
 
+    let isPanning = false;
+    let initialPinchDist = 0;
+    const activePointers = new Map();
+
     modal.onwheel = (e) => {
         if (modal.style.display !== 'flex') return;
         const img = modalContent.querySelector('img');
         if (!img) return;
         e.preventDefault();
-        const delta = e.deltaY > 0 ? 0.8 : 1.25;
+        const delta = e.deltaY > 0 ? 0.85 : 1.15;
         zoomScale = Math.max(1, Math.min(zoomScale * delta, 5));
         modalUpdateTransform(true);
     };
@@ -819,67 +825,70 @@ title: Gallery
                      e.target.closest('#close-modal') || e.target.closest('#metadata-toggle');
         if (!img || isUI) return;
 
-        const now = Date.now();
-        if (e.pointerType === 'touch' && now - lastTapTime < 300) {
-            zoomScale = 1; zoomPosX = 0; zoomPosY = 0;
-            modalUpdateTransform(true);
-            lastTapTime = 0;
-            return;
-        }
-        lastTapTime = now;
-
-        evCache.push({ pointerId: e.pointerId, clientX: e.clientX, clientY: e.clientY });
+        e.preventDefault();
+        activePointers.set(e.pointerId, e);
         modal.setPointerCapture(e.pointerId);
-        lastPosX = e.clientX;
-        lastPosY = e.clientY;
-        if (zoomScale > 1) img.style.cursor = 'grabbing';
+
+        if (activePointers.size === 1) {
+            isPanning = true;
+            lastPosX = e.clientX;
+            lastPosY = e.clientY;
+            if (zoomScale > 1) img.style.cursor = 'grabbing';
+            
+            const now = Date.now();
+            if (now - lastTapTime < 300) {
+                zoomScale = 1; zoomPosX = 0; zoomPosY = 0;
+                modalUpdateTransform(true);
+                lastTapTime = 0;
+                return;
+            }
+            lastTapTime = now;
+        } else if (activePointers.size === 2) {
+            isPanning = false;
+            const pts = Array.from(activePointers.values());
+            initialPinchDist = Math.hypot(pts[0].clientX - pts[1].clientX, pts[0].clientY - pts[1].clientY);
+        }
     };
 
     modal.onpointermove = (e) => {
-        if (modal.style.display !== 'flex') return;
-        const index = evCache.findIndex(ev => ev.pointerId === e.pointerId);
-        if (index < 0) return;
+        if (modal.style.display !== 'flex' || !activePointers.has(e.pointerId)) return;
         
         const img = modalContent.querySelector('img');
         if (!img) return;
         e.preventDefault();
 
-        if (evCache.length === 2) {
-            // Use current move event + cached other pointer
-            const p1 = e.pointerId === evCache[0].pointerId ? e : evCache[0];
-            const p2 = e.pointerId === evCache[1].pointerId ? e : evCache[1];
-            
-            const curDiff = Math.hypot(p1.clientX - p2.clientX, p1.clientY - p2.clientY);
-            const prevDiff = Math.hypot(evCache[0].clientX - evCache[1].clientX, evCache[0].clientY - evCache[1].clientY);
-            
-            if (prevDiff > 0) {
-                const ratio = curDiff / prevDiff;
+        if (activePointers.size === 2) {
+            activePointers.set(e.pointerId, e);
+            const pts = Array.from(activePointers.values());
+            const curDist = Math.hypot(pts[0].clientX - pts[1].clientX, pts[0].clientY - pts[1].clientY);
+            if (initialPinchDist > 0) {
+                const ratio = curDist / initialPinchDist;
                 zoomScale = Math.max(1, Math.min(zoomScale * ratio, 5));
+                initialPinchDist = curDist;
                 modalUpdateTransform();
             }
-        } else if (evCache.length === 1 && zoomScale > 1) {
+        } else if (isPanning && zoomScale > 1) {
             const dx = e.clientX - lastPosX;
             const dy = e.clientY - lastPosY;
             zoomPosX += dx;
             zoomPosY += dy;
             modalUpdateTransform();
         }
-
-        evCache[index].clientX = e.clientX;
-        evCache[index].clientY = e.clientY;
+        
         lastPosX = e.clientX;
         lastPosY = e.clientY;
     };
 
     const stopModalGesture = (e) => {
-        evCache = evCache.filter(ev => ev.pointerId !== e.pointerId);
+        activePointers.delete(e.pointerId);
+        if (activePointers.size < 2) initialPinchDist = 0;
+        if (activePointers.size === 0) isPanning = false;
         const img = modalContent.querySelector('img');
         if (img) img.style.cursor = zoomScale > 1 ? 'grab' : 'zoom-in';
     };
 
     modal.onpointerup = stopModalGesture;
     modal.onpointercancel = stopModalGesture;
-    modal.onpointerout = stopModalGesture;
     modal.onpointerleave = stopModalGesture;
 
     function renderMetadata(meta) {
@@ -933,6 +942,8 @@ title: Gallery
     function hideModal() {
         modal.style.display = 'none';
         modalContent.innerHTML = '';
+        document.body.style.overflow = 'auto'; // Restore scroll
+        document.body.style.touchAction = 'auto';
     }
 
 

@@ -826,13 +826,17 @@ title: Gallery
         if (!img || isUI) return;
 
         e.preventDefault();
-        activePointers.set(e.pointerId, e);
+        // Move to Map-based per-pointer tracking
+        activePointers.set(e.pointerId, { 
+            lastX: e.clientX, 
+            lastY: e.clientY,
+            startX: e.clientX,
+            startY: e.clientY 
+        });
         modal.setPointerCapture(e.pointerId);
 
         if (activePointers.size === 1) {
             isPanning = true;
-            lastPosX = e.clientX;
-            lastPosY = e.clientY;
             if (zoomScale > 1) img.style.cursor = 'grabbing';
             
             const now = Date.now();
@@ -846,7 +850,7 @@ title: Gallery
         } else if (activePointers.size === 2) {
             isPanning = false;
             const pts = Array.from(activePointers.values());
-            initialPinchDist = Math.hypot(pts[0].clientX - pts[1].clientX, pts[0].clientY - pts[1].clientY);
+            initialPinchDist = Math.hypot(pts[0].lastX - pts[1].lastX, pts[0].lastY - pts[1].lastY);
         }
     };
 
@@ -857,10 +861,13 @@ title: Gallery
         if (!img) return;
         e.preventDefault();
 
+        const pData = activePointers.get(e.pointerId);
+
         if (activePointers.size === 2) {
-            activePointers.set(e.pointerId, e);
+            pData.lastX = e.clientX;
+            pData.lastY = e.clientY;
             const pts = Array.from(activePointers.values());
-            const curDist = Math.hypot(pts[0].clientX - pts[1].clientX, pts[0].clientY - pts[1].clientY);
+            const curDist = Math.hypot(pts[0].lastX - pts[1].lastX, pts[0].lastY - pts[1].lastY);
             if (initialPinchDist > 0) {
                 const ratio = curDist / initialPinchDist;
                 zoomScale = Math.max(1, Math.min(zoomScale * ratio, 5));
@@ -868,21 +875,31 @@ title: Gallery
                 modalUpdateTransform();
             }
         } else if (isPanning && zoomScale > 1) {
-            const dx = e.clientX - lastPosX;
-            const dy = e.clientY - lastPosY;
+            const dx = e.clientX - pData.lastX;
+            const dy = e.clientY - pData.lastY;
             zoomPosX += dx;
             zoomPosY += dy;
             modalUpdateTransform();
         }
         
-        lastPosX = e.clientX;
-        lastPosY = e.clientY;
+        pData.lastX = e.clientX;
+        pData.lastY = e.clientY;
     };
 
     const stopModalGesture = (e) => {
+        const pData = activePointers.get(e.pointerId);
+        if (pData) {
+            const distMoved = Math.hypot(e.clientX - pData.startX, e.clientY - pData.startY);
+            // ONLY close if they tapped with almost no movement (less than 5px)
+            if (distMoved < 5 && e.target === modal && activePointers.size === 1) {
+                closeModalHandler();
+            }
+        }
+
         activePointers.delete(e.pointerId);
         if (activePointers.size < 2) initialPinchDist = 0;
         if (activePointers.size === 0) isPanning = false;
+
         const img = modalContent.querySelector('img');
         if (img) img.style.cursor = zoomScale > 1 ? 'grab' : 'zoom-in';
     };
@@ -951,7 +968,7 @@ title: Gallery
     nextBtn.addEventListener('click', (e) => { e.stopPropagation(); showNext(); });
     closeModal.addEventListener('click', closeModalHandler);
 
-    window.addEventListener('click', (e) => { if (e.target === modal) closeModalHandler(); });
+
 
     window.addEventListener('popstate', (e) => {
         if (zoomScale > 1.05 && modal.style.display === 'flex') {

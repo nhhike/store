@@ -630,20 +630,38 @@ title: Gallery
                     : omnivore.kml(data);
 
                 layer.on('loaded', function (e) {
-                    map.fitBounds(e.target ? e.target.getBounds() : layer.getBounds());
+                    const bounds = e.target ? e.target.getBounds() : layer.getBounds();
+                    if (bounds && bounds.isValid()) {
+                        map.fitBounds(bounds);
+                    }
                     mapDiv._leaflet_track = e.target || layer;
                 }).addTo(map);
 
+                layer.on('error', function (e) {
+                    console.warn('Leaflet layer parse error:', e);
+                    pane.innerHTML = `<div style="padding: 20px; text-align: center; color: #ff6b6b;">GPX Parse Error: Ensure file is valid GPX/KML.</div>`;
+                });
+
                 if (file.name.endsWith('.kml')) {
-                    // Omnivore KML doesn't always fire 'loaded' same way
-                    setTimeout(() => map.fitBounds(layer.getBounds()), 1000);
+                    setTimeout(() => {
+                        const b = layer.getBounds();
+                        if (b && b.isValid()) map.fitBounds(b);
+                    }, 1000);
                 }
 
             }, 500);
 
         } catch (e) {
             console.error('Map load error:', e);
-            pane.innerHTML = `<div style="padding: 20px; text-align: center; color: #ff6b6b;">Failed to load Map "${file.name}": ${e.message}</div>`;
+            const errorMsg = e.message.includes('HTTP 403') ? 'Google Drive Access Denied (Check API Key/Sharing)' : e.message;
+            pane.innerHTML = `
+                <div style="padding: 30px; text-align: center; background: rgba(255,0,0,0.05); border: 1px solid rgba(255,0,0,0.2); border-radius: 12px;">
+                    <i class="fa-solid fa-circle-exclamation" style="font-size: 2rem; color: #ff6b6b; margin-bottom: 15px; display: block;"></i>
+                    <div style="color: #ff6b6b; font-weight: 700; margin-bottom: 5px;">Failed to load Map data</div>
+                    <div style="color: #fff; font-size: 0.8rem; opacity: 0.8;">"${file.name}"</div>
+                    <div style="color: #ff6b6b; font-size: 0.75rem; margin-top: 10px; font-family: monospace;">Error: ${errorMsg}</div>
+                    <button onclick="switchTab(document.querySelector('.tab-btn.active'), '${pane.id}')" style="margin-top: 15px; background: var(--accent); border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer; font-size: 0.7rem; font-weight: bold;">Retry</button>
+                </div>`;
         }
     }
 

@@ -179,7 +179,7 @@ body {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.4s ease;
-    z-index: 999;
+    z-index: 2500;
 }
 
 .mobile-nav { list-style: none; padding: 20px 0; }

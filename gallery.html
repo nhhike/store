@@ -284,11 +284,11 @@ title: Gallery
 
         <!-- Navigation Arrows -->
         <div id="prev-media"
-            style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #fff; font-size: 40px; cursor: pointer; z-index: 2001; opacity: 0.6; padding: 20px;">
+            style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--accent); font-size: 40px; cursor: pointer; z-index: 2001; opacity: 0.8; padding: 20px;">
             <i class="fa-solid fa-chevron-left"></i>
         </div>
         <div id="next-media"
-            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #fff; font-size: 40px; cursor: pointer; z-index: 2001; opacity: 0.6; padding: 20px;">
+            style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--accent); font-size: 40px; cursor: pointer; z-index: 2001; opacity: 0.8; padding: 20px;">
             <i class="fa-solid fa-chevron-right"></i>
         </div>
 
@@ -691,7 +691,7 @@ title: Gallery
     }
 
     function renderMediaCard(file, index) {
-        const isVideo = file.mimeType.startsWith('video/');
+        const isVideo = file.mimeType.startsWith('video/') || file.name.toLowerCase().endsWith('.gif') || file.name.toLowerCase().endsWith('.webm');
         const card = document.createElement('div');
         card.className = 'app-card';
         card.style.padding = '0';
@@ -701,7 +701,7 @@ title: Gallery
         card.innerHTML = `
             <div style="position: relative; width: 100%; aspect-ratio: 1/1;">
                 <img src="https://lh3.googleusercontent.com/d/${file.id}=s400" alt="${file.name}" style="width:100%; height:100%; object-fit:cover; transition:0.4s;">
-                ${isVideo ? '<i class="fa-solid fa-play" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:#fff; font-size:1.5rem; opacity:0.7;"></i>' : ''}
+                ${isVideo ? '<i class="fa-solid fa-circle-play" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); color:var(--accent); font-size:2rem; opacity:0.95; text-shadow: 0 0 15px rgba(0,0,0,0.6);"></i>' : ''}
             </div>
         `;
 
@@ -715,6 +715,21 @@ title: Gallery
     let zoomPosX = 0;
     let zoomPosY = 0;
     let lastTapTime = 0;
+    let ticking = false;
+
+    const updateTransform = (smooth = false) => {
+        if (!ticking || smooth) {
+            ticking = true;
+            requestAnimationFrame(() => {
+                const img = modalContent.querySelector('img');
+                if (img) {
+                    img.style.transition = smooth ? 'transform 0.3s cubic-bezier(0.2, 0, 0.2, 1)' : 'none';
+                    img.style.transform = `translate(${zoomPosX}px, ${zoomPosY}px) scale(${zoomScale})`;
+                }
+                ticking = false;
+            });
+        }
+    };
 
     function openMedia(file) {
         modalContent.innerHTML = '';
@@ -753,15 +768,15 @@ title: Gallery
     function setupZoom(img) {
         let initialDist = 0;
         let initialScale = 1;
-        let lastTouchEndTime = 0;
 
         const updateTransform = (smooth = false) => {
-            img.style.transition = smooth ? 'transform 0.3s ease' : 'none';
-            img.style.transform = `translate(${zoomPosX}px, ${zoomPosY}px) scale(${zoomScale})`;
+            requestAnimationFrame(() => {
+                img.style.transition = smooth ? 'transform 0.3s cubic-bezier(0.2, 0, 0.2, 1)' : 'none';
+                img.style.transform = `translate(${zoomPosX}px, ${zoomPosY}px) scale(${zoomScale})`;
+            });
         };
 
         img.addEventListener('touchstart', (e) => {
-            // Double Tap Check
             const now = Date.now();
             if (now - lastTapTime < 300) {
                 zoomScale = 1; zoomPosX = 0; zoomPosY = 0;
@@ -773,10 +788,7 @@ title: Gallery
             lastTapTime = now;
 
             if (e.touches.length === 2) {
-                initialDist = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
+                initialDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
                 initialScale = zoomScale;
             } else if (e.touches.length === 1) {
                 img.startX = e.touches[0].clientX - zoomPosX;
@@ -787,14 +799,13 @@ title: Gallery
         img.addEventListener('touchmove', (e) => {
             if (e.touches.length === 2) {
                 e.preventDefault();
-                const dist = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-                const scale = (dist / initialDist) * initialScale;
-                zoomScale = Math.max(1, Math.min(scale, 5));
-                updateTransform();
-            } else if (e.touches.length === 1 && zoomScale > 1) {
+                const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                if (initialDist > 0) {
+                    const scale = (dist / initialDist) * initialScale;
+                    zoomScale = Math.max(1, Math.min(scale, 5));
+                    updateTransform();
+                }
+            } else if (e.touches.length === 1 && zoomScale > 1.05) {
                 e.preventDefault();
                 zoomPosX = e.touches[0].clientX - img.startX;
                 zoomPosY = e.touches[0].clientY - img.startY;
@@ -872,7 +883,14 @@ title: Gallery
     window.addEventListener('click', (e) => { if (e.target === modal) closeModalHandler(); });
 
     window.addEventListener('popstate', (e) => {
-        hideModal();
+        if (zoomScale > 1.05 && modal.style.display === 'flex') {
+            zoomScale = 1; zoomPosX = 0; zoomPosY = 0;
+            updateTransform(true);
+            // Re-push state so the NEXT back button closes it
+            history.pushState({ modalOpen: true }, '');
+        } else {
+            hideModal();
+        }
     });
 
     // Jump to images logic

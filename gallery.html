@@ -466,14 +466,17 @@ title: Gallery
         currentMediaList = [];
 
         try {
-            // Include imageMediaMetadata and videoMediaMetadata in request
+            // Remove MIME type restrictions to catch files Google labels incorrectly
             const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,webContentLink,imageMediaMetadata,videoMediaMetadata)&key=${API_KEY}`;
             const response = await fetch(url);
             const data = await response.json();
 
-            const files = data.files;
-            const textFiles = prepareTabData(files.filter(f => f.name.endsWith('.md')));
-            const mapFiles = prepareTabData(files.filter(f => f.name.endsWith('.gpx') || f.name.endsWith('.kml')));
+            const allFiles = data.files || [];
+            
+            // Client-side filtering by extension
+            const textFiles = prepareTabData(allFiles.filter(f => f.name.toLowerCase().endsWith('.md')));
+            const mapFiles = prepareTabData(allFiles.filter(f => f.name.toLowerCase().endsWith('.gpx') || f.name.toLowerCase().endsWith('.kml')));
+            const imageVideoFiles = allFiles.filter(f => f.mimeType && (f.mimeType.startsWith('image/') || f.mimeType.startsWith('video/')));
 
             if (textFiles.length > 0 || mapFiles.length > 0) {
                 const textRow = document.getElementById('text-tabs-row');
@@ -500,8 +503,7 @@ title: Gallery
                 });
             }
 
-            currentMediaList = files.filter(f => f.mimeType.startsWith('image/') || f.mimeType.startsWith('video/'))
-                .sort((a, b) => a.name.localeCompare(b.name));
+            currentMediaList = imageVideoFiles.sort((a, b) => a.name.localeCompare(b.name));
 
             grid.innerHTML = '';
             currentMediaList.forEach((file, index) => renderMediaCard(file, index));

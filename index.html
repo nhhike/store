@@ -20,8 +20,8 @@ title: Home
     </div>
 
     <!-- Blog Card Grid -->
-    <div id="blog-feed" class="card-grid" style="padding: 0;">
-        <div style="text-align: center; width: 100%; color: var(--text-secondary); padding: 40px;">
+    <div id="blog-feed" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px; width: 100%; padding: 0;">
+        <div style="text-align: center; width: 100%; color: var(--text-secondary); padding: 40px; grid-column: 1/-1;">
             <i class="fa-solid fa-spinner fa-spin"></i> Discovering stories...
         </div>
     </div>
@@ -87,8 +87,8 @@ title: Home
         const text = await resp.text();
         
         // Extract first paragraph for preview
-        const lines = text.split('\n').filter(l => l.trim() && !l.trim().startsWith('#'));
-        const preview = lines[0] ? lines[0].substring(0, 160) + '...' : 'Dive into this trekking story...';
+        const lines = text.split('\n').filter(l => l.trim() && !l.trim().startsWith('#') && !l.trim().startsWith('`'));
+        const preview = lines[0] ? lines[0].substring(0, 240) + '...' : 'Dive into this trekking story...';
         
         const date = new Date(file.modifiedTime).toLocaleDateString(undefined, { 
             month: 'short', day: 'numeric', year: 'numeric' 
@@ -97,13 +97,21 @@ title: Home
         const card = document.createElement('div');
         card.className = 'app-card';
         card.style.cursor = 'pointer';
+        card.style.maxWidth = 'none'; // Allow it to fill the grid cell
+        card.style.width = '100%';
+        card.style.display = 'flex';
+        card.style.flexDirection = 'column';
+        card.style.justifyContent = 'space-between';
+
         card.innerHTML = `
-            <div style="font-size: 0.75rem; color: var(--accent); margin-bottom: 15px; opacity: 0.8; font-family: 'Inter', sans-serif;">
-                <i class="fa-regular fa-calendar" style="margin-right: 5px;"></i> ${date}
+            <div>
+                <div style="font-size: 0.75rem; color: var(--accent); margin-bottom: 15px; opacity: 0.8; font-family: 'Inter', sans-serif;">
+                    <i class="fa-regular fa-calendar" style="margin-right: 5px;"></i> ${date}
+                </div>
+                <h3 style="font-size: 2rem;">${file.name.replace('.md', '')}</h3>
+                <p style="font-size: 1rem; line-height: 1.6; color: var(--text-secondary);">${preview}</p>
             </div>
-            <h3>${file.name.replace('.md', '')}</h3>
-            <p>${preview}</p>
-            <div style="color: var(--accent); font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+            <div style="color: var(--accent); font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; margin-top: 20px;">
                 Read Story <i class="fa-solid fa-arrow-right"></i>
             </div>
         `;

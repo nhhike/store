@@ -434,11 +434,16 @@ body {
 }
 
 .email-img {
-    height: 1.1rem;
+    height: 0.9rem;
     width: auto;
     object-fit: contain;
-    opacity: 0.9;
+    opacity: 0.8;
     vertical-align: middle;
+    transition: opacity 0.3s;
+}
+
+.email-img:hover {
+    opacity: 1;
 }
 
 .footer-copy {
@@ -460,5 +465,8 @@ body {
     .footer-links {
         gap: 20px;
         flex-direction: column;
+    }
+    .email-img {
+        height: 0.75rem;
     }
 }

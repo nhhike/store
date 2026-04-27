@@ -556,36 +556,13 @@ title: Gallery
             }, 100);
         }
     }
-    async function robustFetch(targetUrl, attempt = 1) {
-        const proxies = [
-            url => url, // Try Direct
-            url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-            url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-            url => `https://api.codetabs.com/v1/proxy/?url=${encodeURIComponent(url)}`
-        ];
-
-        for (const getProxyUrl of proxies) {
-            try {
-                const url = getProxyUrl(targetUrl);
-                const resp = await fetch(url, { signal: AbortSignal.timeout(6000) });
-                if (resp.ok) return await resp.text();
-            } catch (e) {
-                console.warn(`Proxy failed: ${getProxyUrl(targetUrl)}`, e);
-            }
-        }
-
-        if (attempt < 2) {
-            await new Promise(r => setTimeout(r, 500));
-            return await robustFetch(targetUrl, attempt + 1);
-        }
-
-        throw new Error("Temporary network delay. Please tap 'Retry Boarding' or refresh.");
-    }
-
     async function loadMarkdownTab(file, pane) {
         try {
             const target = `https://drive.google.com/uc?id=${file.id}&export=download`;
-            const text = await robustFetch(target);
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
+            const resp = await fetch(proxyUrl);
+            const text = await resp.text();
+            
             const contentHtml = marked.parse(text);
             initCollapsiblePane(pane, contentHtml);
 
@@ -596,7 +573,6 @@ title: Gallery
                     <i class="fa-solid fa-triangle-exclamation" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
                     <p style="font-weight: 600;">Failed to load "${file.name}"</p>
                     <p style="font-size: 0.85rem; opacity: 0.8; margin-top: 5px;">${e.message}</p>
-                    <button onclick="location.reload()" style="margin-top: 15px; background: var(--accent); border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.8rem;">Retry Boarding</button>
                 </div>
             `;
         }
@@ -607,7 +583,9 @@ title: Gallery
 
         try {
             const target = `https://drive.google.com/uc?id=${file.id}&export=download`;
-            const data = await robustFetch(target);
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
+            const resp = await fetch(proxyUrl);
+            const data = await resp.text();
 
             const mapHtml = `
                 <div style="position: relative;">

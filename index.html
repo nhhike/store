@@ -79,32 +79,6 @@ title: Home
 
     const backToTop = document.getElementById('back-to-top');
 
-    async function robustFetch(targetUrl, attempt = 1) {
-        const proxies = [
-            url => url, // Try Direct
-            url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-            url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-            url => `https://api.codetabs.com/v1/proxy/?url=${encodeURIComponent(url)}`
-        ];
-
-        for (const getProxyUrl of proxies) {
-            try {
-                const url = getProxyUrl(targetUrl);
-                const resp = await fetch(url, { signal: AbortSignal.timeout(6000) });
-                if (resp.ok) return await resp.text();
-            } catch (e) {
-                console.warn(`Proxy failed: ${getProxyUrl(targetUrl)}`, e);
-            }
-        }
-
-        if (attempt < 2) {
-            await new Promise(r => setTimeout(r, 500));
-            return await robustFetch(targetUrl, attempt + 1);
-        }
-
-        throw new Error("Temporary network delay. Please tap 'Retry Boarding' or refresh.");
-    }
-
     async function initBlog() {
         const feed = document.getElementById('blog-feed');
         if (!BLOG_ROOT_ID || BLOG_ROOT_ID.includes('EXAMPLE')) {
@@ -139,7 +113,11 @@ title: Home
         const target = `https://drive.google.com/uc?id=${file.id}&export=download`;
         
         try {
-            const text = await robustFetch(target);
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
+            const resp = await fetch(proxyUrl);
+            if (!resp.ok) throw new Error('Proxy error');
+            const text = await resp.text();
+            
             const lines = text.split('\n').filter(l => l.trim() && !l.trim().startsWith('#') && !l.trim().startsWith('`'));
             const preview = lines[0] ? lines[0].substring(0, 240) + '...' : 'Dive into this trekking story...';
             const date = new Date(file.modifiedTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
@@ -148,22 +126,19 @@ title: Home
             card.className = 'app-card';
             card.style.width = '100%';
             card.style.maxWidth = 'none';
-            card.style.transition = '0.4s';
 
             card.innerHTML = `
                 <div style="font-size: 0.75rem; color: var(--accent); margin-bottom: 15px; opacity: 0.8; font-family: 'Inter', sans-serif;">
                     <i class="fa-regular fa-calendar" style="margin-right: 5px;"></i> ${date}
                 </div>
                 <h3 style="font-size: 2rem; margin-bottom: 20px;">${file.name.replace('.md', '')}</h3>
-                
                 <div class="blog-preview-text" style="font-size: 1rem; line-height: 1.6; color: var(--text-secondary);">
                     <p>${preview}</p>
                 </div>
                 <div class="blog-full-text" style="display: none; font-size: 1rem; line-height: 1.8; color: #eee; margin-top: 20px;">
                     ${marked.parse(text)}
                 </div>
-
-                <div class="blog-toggle" style="color: var(--accent); font-weight: 600; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 8px; margin-top: 25px; user-select: none;">
+                <div class="blog-toggle" style="color: var(--accent); font-weight: 600; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 8px; margin-top: 25px;">
                     <span class="toggle-label">Read Story</span> <i class="fa-solid fa-arrow-right"></i>
                 </div>
             `;
@@ -190,20 +165,15 @@ title: Home
                     icon.className = 'fa-solid fa-arrow-up';
                 }
             };
-
             container.appendChild(card);
         } catch (e) {
             console.error('Card render failed:', e);
         }
     }
 
-    // Floating Button Logic
     window.addEventListener('scroll', () => {
-        if (window.scrollY > 400) {
-            backToTop.style.display = 'flex';
-        } else {
-            backToTop.style.display = 'none';
-        }
+        if (window.scrollY > 400) backToTop.style.display = 'flex';
+        else backToTop.style.display = 'none';
     });
 
     backToTop.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });

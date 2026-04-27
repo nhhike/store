@@ -578,26 +578,27 @@ title: Gallery
         }
     }
     async function robustFetch(targetUrl, attempt = 1) {
+        const freshUrl = targetUrl + (targetUrl.includes('?') ? '&' : '?') + '_ts=' + Date.now();
         const proxies = [
-            url => url, // Try Direct
+            url => url,
+            url => `https://cors-proxy.htmldriven.com/?url=${encodeURIComponent(url)}`,
             url => `https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=3600&url=${encodeURIComponent(url)}`,
             url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-            url => `https://api.codetabs.com/v1/proxy/?url=${encodeURIComponent(url)}`,
-            url => `https://corsproxy.io/?${encodeURIComponent(url)}`
+            url => `https://api.codetabs.com/v1/proxy/?url=${encodeURIComponent(url)}`
         ];
 
         for (const getProxyUrl of proxies) {
             try {
-                const url = getProxyUrl(targetUrl);
+                const url = getProxyUrl(freshUrl);
                 const resp = await fetch(url);
                 if (resp.ok) return await resp.text();
             } catch (e) {
-                console.warn(`Bridge failed: ${getProxyUrl(targetUrl)}`);
+                console.warn(`Bridge failed: ${getProxyUrl(freshUrl)}`);
             }
         }
 
         if (attempt < 2) {
-            await new Promise(r => setTimeout(r, 500));
+            await new Promise(r => setTimeout(r, 800));
             return await robustFetch(targetUrl, attempt + 1);
         }
 

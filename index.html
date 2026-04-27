@@ -27,9 +27,49 @@ title: Home
     </div>
 </main>
 
-<!-- Floating Back to Top Button -->
-<button id="back-to-top"
-    style="position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px; background: var(--accent); color: #000; border: none; border-radius: 12px; cursor: pointer; display: none; align-items: center; justify-content: center; font-size: 1.2rem; z-index: 1000; box-shadow: 0 10px 25px rgba(0,0,0,0.3); transition: 0.3s;">
+<style>
+    #back-to-top {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 50px;
+        height: 50px;
+        background: var(--accent);
+        color: #000;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        z-index: 1000;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        transition: 0.3s;
+    }
+    #back-to-top:hover {
+        transform: translateY(-5px);
+        background: #fff;
+    }
+    /* Ensure markdown content inside cards is consistently white/light-grey */
+    .blog-full-text p {
+        color: #ddd !important;
+        opacity: 0.95;
+        margin-bottom: 20px;
+        min-height: auto !important; /* Fix inherited min-height */
+    }
+    .blog-full-text h1, .blog-full-text h2, .blog-full-text h3 {
+        color: #fff !important;
+        margin: 30px 0 15px;
+    }
+    .blog-full-text ul, .blog-full-text ol {
+        margin-bottom: 25px;
+        padding-left: 20px;
+        color: #ddd;
+    }
+</style>
+
+<button id="back-to-top" title="Go to top">
     <i class="fa-solid fa-arrow-up"></i>
 </button>
 
@@ -128,20 +168,14 @@ title: Home
 
     // Floating Button Logic
     window.addEventListener('scroll', () => {
-        if (window.scrollY > 400) backToTop.style.display = 'flex';
-        else backToTop.style.display = 'none';
+        if (window.scrollY > 400) {
+            backToTop.style.display = 'flex';
+        } else {
+            backToTop.style.display = 'none';
+        }
     });
 
     backToTop.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    backToTop.onmouseenter = () => {
-        backToTop.style.transform = 'translateY(-5px)';
-        backToTop.style.background = '#fff';
-    };
-    backToTop.onmouseleave = () => {
-        backToTop.style.transform = 'translateY(0)';
-        backToTop.style.background = 'var(--accent)';
-    };
 
     initBlog();
 </script>

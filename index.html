@@ -112,10 +112,9 @@ title: Home
         const target = `https://drive.google.com/uc?id=${file.id}&export=download`;
         
         try {
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(target)}&_=${Date.now()}`;
+            const proxyUrl = `https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=3600&url=${encodeURIComponent(target)}`;
             const resp = await fetch(proxyUrl);
-            const json = await resp.json();
-            const text = json.contents;
+            const text = await resp.text();
             
             if (!text) throw new Error('Empty response from bridge');
             

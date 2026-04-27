@@ -438,8 +438,6 @@ body {
     width: auto;
     opacity: 0.9;
     vertical-align: middle;
-    filter: invert(1);
-    mix-blend-mode: lighten;
 }
 
 .footer-copy {

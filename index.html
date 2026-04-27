@@ -89,9 +89,14 @@ title: Home
     const backToTop = document.getElementById('back-to-top');
 
     async function robustFetch(targetUrl, attempt = 1) {
-        // Use the professional Media Pipeline for text files
+        if (targetUrl.includes('alt=media')) {
+            try {
+                const resp = await fetch(targetUrl);
+                if (resp.ok) return await resp.text();
+            } catch (e) { }
+        }
+
         const freshUrl = targetUrl + (targetUrl.includes('?') ? '&' : '?') + '_ts=' + Date.now();
-        
         const proxies = [
             url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
             url => `https://cors-proxy.htmldriven.com/?url=${encodeURIComponent(url)}`,
@@ -104,11 +109,9 @@ title: Home
                 const url = getProxyUrl(freshUrl);
                 const resp = await fetch(url);
                 const json = await resp.json();
-                const text = json.contents || json; // Handle both JSON-wrapped and raw
+                const text = json.contents || json;
                 if (text && typeof text === 'string') return text;
-            } catch (e) {
-                console.warn(`Bridge failed: ${getProxyUrl(freshUrl)}`);
-            }
+            } catch (e) { }
         }
 
         if (attempt < 2) {
@@ -159,11 +162,21 @@ title: Home
     }
 
     async function renderBlogCard(file, container) {
-        // Use Official Media Stream Endpoint
+        console.log(`Loading Blog Card: ${file.name} | MIME: ${file.mimeType}`);
         const target = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
         
         try {
-            const text = await robustFetch(target);
+            let text = await robustFetch(target);
+            
+            // NEW: Strip data URL wrapper if present (suggested fix)
+            if (text.trim().startsWith('data:')) {
+                const base64Part = text.split(',')[1];
+                text = atob(base64Part);   // decode base64 to plain text
+                console.log('Decoded data URL for:', file.name);
+            }
+            
+            if (!text || text.includes('error')) throw new Error('Empty file content');
+            
             const lines = text.split('\n').filter(l => l.trim() && !l.trim().startsWith('#') && !l.trim().startsWith('`'));
             const preview = lines[0] ? lines[0].substring(0, 240) + '...' : 'Dive into this trekking story...';
             const date = new Date(file.modifiedTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });

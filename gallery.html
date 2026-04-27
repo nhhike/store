@@ -628,12 +628,19 @@ title: Gallery
         }
     }
 
-    async function loadMapTab(file, pane) {
+async function loadMapTab(file, pane) {
         const containerId = `map-${file.id}`;
 
         try {
             const target = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
-            const data = await robustFetch(target);
+            let data = await robustFetch(target);
+            
+            if (data.trim().startsWith('data:')) {
+                const base64Part = data.split(',')[1];
+                data = atob(base64Part);
+            }
+            
+            if (!data) throw new Error('Map data unavailable');
 
             const mapHtml = `
                 <div style="position: relative;">

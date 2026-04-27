@@ -678,11 +678,19 @@ title: Gallery
             toggle.style.display = 'none'; // No need for toggle if auto-expanded
         }
 
-        setTimeout(() => {
-            if (!autoExpand && inner.scrollHeight > 150) {
+        // Force redraw and height calculation
+        const checkHeight = () => {
+            if (inner.scrollHeight > 150) {
                 toggle.style.display = 'block';
+            } else if (inner.scrollHeight > 0) {
+                wrapper.classList.add('expanded'); // Auto-expand if short but present
             }
-        }, 800);
+        };
+
+        // Try several times as images/text load
+        checkHeight();
+        setTimeout(checkHeight, 500);
+        setTimeout(checkHeight, 1500);
 
         toggle.addEventListener('click', () => {
             const isExpanded = wrapper.classList.contains('expanded');

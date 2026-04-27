@@ -98,10 +98,9 @@ title: Home
             }
 
             feed.innerHTML = '';
-            const posts = data.files.slice(0, 3);
-            for (const file of posts) {
-                await renderBlogCard(file, feed);
-            }
+            feed.innerHTML = '';
+            const posts = data.files; // Show all available stories
+            posts.forEach(file => renderBlogCard(file, feed));
 
         } catch (err) {
             console.error('Blog load failed:', err);

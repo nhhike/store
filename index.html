@@ -112,10 +112,12 @@ title: Home
         const target = `https://drive.google.com/uc?id=${file.id}&export=download`;
         
         try {
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}&_=${Date.now()}`;
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(target)}&_=${Date.now()}`;
             const resp = await fetch(proxyUrl);
-            if (!resp.ok) throw new Error('Proxy error');
-            const text = await resp.text();
+            const json = await resp.json();
+            const text = json.contents;
+            
+            if (!text) throw new Error('Empty response from bridge');
             
             const lines = text.split('\n').filter(l => l.trim() && !l.trim().startsWith('#') && !l.trim().startsWith('`'));
             const preview = lines[0] ? lines[0].substring(0, 240) + '...' : 'Dive into this trekking story...';

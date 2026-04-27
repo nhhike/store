@@ -2,6 +2,8 @@
 layout: default
 title: Home
 ---
+<!-- Marked.js for Markdown parsing -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <header class="hero">
     <div class="hero-content">
@@ -10,3 +12,127 @@ title: Home
         <a href="{{ '/gallery.html' | relative_url }}" class="btn">Start Exploring</a>
     </div>
 </header>
+
+<main class="main-content" style="max-width: 1200px; margin: 40px auto; padding: 0 20px 80px;">
+    <div style="text-align: center; margin-bottom: 50px;">
+        <h2 style="color: var(--accent); font-size: 2.2rem; margin-bottom: 10px;">Latest Trekking Stories</h2>
+        <p style="color: var(--text-secondary); opacity: 0.8;">Fresh captures and insights from the Granite State.</p>
+    </div>
+
+    <!-- Blog Card Grid -->
+    <div id="blog-feed" class="card-grid" style="padding: 0;">
+        <div style="text-align: center; width: 100%; color: var(--text-secondary); padding: 40px;">
+            <i class="fa-solid fa-spinner fa-spin"></i> Discovering stories...
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 60px;">
+        <a href="{{ '/gallery.html' | relative_url }}" class="btn" style="background: rgba(255,255,255,0.05); border-color: var(--glass-border);">
+            View Image Gallery
+        </a>
+    </div>
+</main>
+
+<!-- Blog Modal -->
+<div id="blog-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 5000; overflow-y: auto; backdrop-filter: blur(20px);">
+    <div class="modal-inner" style="max-width: 800px; margin: 60px auto; padding: 40px; position: relative;">
+        <span id="close-blog" style="position: fixed; top: 30px; right: 40px; color: #fff; font-size: 40px; cursor: pointer; z-index: 5001;">&times;</span>
+        <div id="blog-content" class="glass-content" style="padding: 40px; line-height: 1.8; color: #eee;">
+            <!-- Full post content here -->
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_KEY = 'AIzaSyB4KXMciiR9YisJ_1M2C5-EiiyeFJPWSlw';
+    const BLOG_ROOT_ID = '1tX_K6Y12345EXAMPLE_ID'; // UPDATE THIS with your NH-HIKE-BLOG folder ID
+
+    async function initBlog() {
+        const feed = document.getElementById('blog-feed');
+        if (!BLOG_ROOT_ID || BLOG_ROOT_ID.includes('EXAMPLE')) {
+            feed.innerHTML = '<div style="opacity: 0.5;">Add your NH-HIKE-BLOG Folder ID to the config to see latest stories.</div>';
+            return;
+        }
+
+        try {
+            // Fetch .md files from Blog folder, sorted by modification date
+            const url = `https://www.googleapis.com/drive/v3/files?q='${BLOG_ROOT_ID}'+in+parents+and+trashed=false+and+mimeType='text/markdown'&fields=files(id,name,modifiedTime)&orderBy=modifiedTime+desc&key=${API_KEY}`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.error) throw new Error(data.error.message);
+            if (!data.files || data.files.length === 0) {
+                feed.innerHTML = '<div style="opacity: 0.5;">No stories found in the blog folder yet.</div>';
+                return;
+            }
+
+            feed.innerHTML = '';
+            // Display latest 3 posts
+            const posts = data.files.slice(0, 3);
+            
+            for (const file of posts) {
+                renderBlogCard(file, feed);
+            }
+
+        } catch (err) {
+            console.error('Blog load failed:', err);
+            feed.innerHTML = `<div style="color: var(--accent)">Notice: Connection to NH-HIKE-BLOG pending.</div>`;
+        }
+    }
+
+    async function renderBlogCard(file, container) {
+        // Fetch content for preview
+        const contentUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
+        const resp = await fetch(contentUrl);
+        const text = await resp.text();
+        
+        // Extract first paragraph for preview
+        const lines = text.split('\n').filter(l => l.trim() && !l.trim().startsWith('#'));
+        const preview = lines[0] ? lines[0].substring(0, 160) + '...' : 'Dive into this trekking story...';
+        
+        const date = new Date(file.modifiedTime).toLocaleDateString(undefined, { 
+            month: 'short', day: 'numeric', year: 'numeric' 
+        });
+
+        const card = document.createElement('div');
+        card.className = 'app-card';
+        card.style.cursor = 'pointer';
+        card.innerHTML = `
+            <div style="font-size: 0.75rem; color: var(--accent); margin-bottom: 15px; opacity: 0.8; font-family: 'Inter', sans-serif;">
+                <i class="fa-regular fa-calendar" style="margin-right: 5px;"></i> ${date}
+            </div>
+            <h3>${file.name.replace('.md', '')}</h3>
+            <p>${preview}</p>
+            <div style="color: var(--accent); font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
+                Read Story <i class="fa-solid fa-arrow-right"></i>
+            </div>
+        `;
+
+        card.onclick = () => openBlogPost(file.id, text);
+        container.appendChild(card);
+    }
+
+    function openBlogPost(id, markdown) {
+        const modal = document.getElementById('blog-modal');
+        const content = document.getElementById('blog-content');
+        
+        content.innerHTML = marked.parse(markdown);
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    document.getElementById('close-blog').onclick = () => {
+        document.getElementById('blog-modal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    };
+
+    window.onclick = (e) => {
+        const modal = document.getElementById('blog-modal');
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    };
+
+    initBlog();
+</script>

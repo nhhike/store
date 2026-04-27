@@ -559,10 +559,17 @@ title: Gallery
     async function loadMarkdownTab(file, pane) {
         try {
             const target = `https://drive.google.com/uc?id=${file.id}&export=download`;
-            const proxyUrl = `https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=3600&url=${encodeURIComponent(target)}`;
-            const resp = await fetch(proxyUrl);
-            const text = await resp.text();
-            
+            let text = '';
+            try {
+                const d = await fetch(target);
+                if (!d.ok) throw new Error();
+                text = await d.text();
+            } catch (e) {
+                const proxyUrl = `https://thingproxy.freeboard.io/fetch/${target}`;
+                const resp = await fetch(proxyUrl);
+                text = await resp.text();
+            }
+
             if (!text) throw new Error('Content unavailable');
             const contentHtml = marked.parse(text);
             initCollapsiblePane(pane, contentHtml);
@@ -584,9 +591,16 @@ title: Gallery
 
         try {
             const target = `https://drive.google.com/uc?id=${file.id}&export=download`;
-            const proxyUrl = `https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=3600&url=${encodeURIComponent(target)}`;
-            const resp = await fetch(proxyUrl);
-            const data = await resp.text();
+            let data = '';
+            try {
+                const d = await fetch(target);
+                if (!d.ok) throw new Error();
+                data = await d.text();
+            } catch (e) {
+                const proxyUrl = `https://thingproxy.freeboard.io/fetch/${target}`;
+                const resp = await fetch(proxyUrl);
+                data = await resp.text();
+            }
             
             if (!data) throw new Error('Map data unavailable');
 

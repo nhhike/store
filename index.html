@@ -108,15 +108,31 @@ title: Home
         }
     }
 
-    async function renderBlogCard(file, container) {
-        const target = `https://drive.google.com/uc?id=${file.id}&export=download`;
-        
+    async function loadMarkdownTab(file, pane) {
         try {
-            const proxyUrl = `https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=3600&url=${encodeURIComponent(target)}`;
-            const resp = await fetch(proxyUrl);
-            const text = await resp.text();
+            const target = `https://drive.google.com/uc?id=${file.id}&export=download`;
+            let text = '';
+            try {
+                const d = await fetch(target);
+                text = await d.text();
+            } catch (e) {
+                const proxyUrl = `https://thingproxy.freeboard.io/fetch/${target}`;
+                const resp = await fetch(proxyUrl);
+                text = await resp.text();
+            }
+            if (!text) throw new Error('Content unavailable');
+            return text;
+        } catch (e) {
+            console.error('Load failed', e);
+            return 'Error loading content.';
+        }
+    }
+
+    async function renderBlogCard(file, container) {
+        try {
+            const text = await loadMarkdownTab(file);
             
-            if (!text) throw new Error('Empty response from bridge');
+            if (!text || text.includes('error')) throw new Error('Refresh required for secure connection');
             
             const lines = text.split('\n').filter(l => l.trim() && !l.trim().startsWith('#') && !l.trim().startsWith('`'));
             const preview = lines[0] ? lines[0].substring(0, 240) + '...' : 'Dive into this trekking story...';

@@ -79,34 +79,6 @@ title: Home
 
     const backToTop = document.getElementById('back-to-top');
 
-    async function initBlog() {
-        const feed = document.getElementById('blog-feed');
-        if (!BLOG_ROOT_ID || BLOG_ROOT_ID.includes('EXAMPLE')) {
-            feed.innerHTML = '<div style="opacity: 0.5;">Add your NH-HIKE-BLOG Folder ID to the config to see latest stories.</div>';
-            return;
-        }
-
-        try {
-            const url = `https://www.googleapis.com/drive/v3/files?q='${BLOG_ROOT_ID}'+in+parents+and+trashed=false+and+mimeType='text/markdown'&fields=files(id,name,modifiedTime)&orderBy=modifiedTime+desc&key=${API_KEY}`;
-            const response = await fetch(url);
-            const data = await response.json();
-
-            if (data.error) throw new Error(data.error.message);
-            if (!data.files || data.files.length === 0) {
-                feed.innerHTML = '<div style="opacity: 0.5; padding: 40px; text-align: center; width: 100%; grid-column: 1/-1;">No stories found in the blog folder yet.</div>';
-                return;
-            }
-
-            feed.innerHTML = '';
-            const posts = data.files.slice(0, 3);
-            for (const file of posts) renderBlogCard(file, feed);
-
-        } catch (err) {
-            console.error('Blog load failed:', err);
-            feed.innerHTML = `<div style="color: var(--accent); padding: 40px; text-align: center; width: 100%; grid-column: 1/-1;">Notice: Connection to NH-HIKE-BLOG pending.</div>`;
-        }
-    }
-
     async function robustFetch(targetUrl) {
         // Try Direct first
         try {
@@ -128,68 +100,99 @@ title: Home
             if (r2.ok) return await r2.text();
         } catch (e) {}
 
-        throw new Error("All data bridges are currently unavailable. Please refresh.");
+        throw new Error("Connection timed out. Please try again.");
+    }
+
+    async function initBlog() {
+        const feed = document.getElementById('blog-feed');
+        if (!BLOG_ROOT_ID || BLOG_ROOT_ID.includes('EXAMPLE')) {
+            feed.innerHTML = '<div style="opacity: 0.5;">Add your NH-HIKE-BLOG Folder ID to the config to see latest stories.</div>';
+            return;
+        }
+
+        try {
+            const url = `https://www.googleapis.com/drive/v3/files?q='${BLOG_ROOT_ID}'+in+parents+and+trashed=false+and+mimeType='text/markdown'&fields=files(id,name,modifiedTime)&orderBy=modifiedTime+desc&key=${API_KEY}`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.error) throw new Error(data.error.message);
+            if (!data.files || data.files.length === 0) {
+                feed.innerHTML = '<div style="opacity: 0.5; padding: 40px; text-align: center; width: 100%; grid-column: 1/-1;">No stories found in the blog folder yet.</div>';
+                return;
+            }
+
+            feed.innerHTML = '';
+            const posts = data.files.slice(0, 3);
+            for (const file of posts) {
+                await renderBlogCard(file, feed);
+            }
+
+        } catch (err) {
+            console.error('Blog load failed:', err);
+            feed.innerHTML = `<div style="color: var(--accent); padding: 40px; text-align: center; width: 100%; grid-column: 1/-1;">Notice: Connection to NH-HIKE-BLOG pending.</div>`;
+        }
     }
 
     async function renderBlogCard(file, container) {
-        // Fetch content for preview using Robust Proxy System
         const target = `https://drive.google.com/uc?id=${file.id}&export=download`;
         
         try {
             const text = await robustFetch(target);
-            
             const lines = text.split('\n').filter(l => l.trim() && !l.trim().startsWith('#') && !l.trim().startsWith('`'));
-        const preview = lines[0] ? lines[0].substring(0, 240) + '...' : 'Dive into this trekking story...';
-        const date = new Date(file.modifiedTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+            const preview = lines[0] ? lines[0].substring(0, 240) + '...' : 'Dive into this trekking story...';
+            const date = new Date(file.modifiedTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 
-        const card = document.createElement('div');
-        card.className = 'app-card';
-        card.style.width = '100%';
-        card.style.maxWidth = 'none';
-        card.style.transition = '0.4s';
+            const card = document.createElement('div');
+            card.className = 'app-card';
+            card.style.width = '100%';
+            card.style.maxWidth = 'none';
+            card.style.transition = '0.4s';
 
-        card.innerHTML = `
-            <div style="font-size: 0.75rem; color: var(--accent); margin-bottom: 15px; opacity: 0.8; font-family: 'Inter', sans-serif;">
-                <i class="fa-regular fa-calendar" style="margin-right: 5px;"></i> ${date}
-            </div>
-            <h3 style="font-size: 2rem; margin-bottom: 20px;">${file.name.replace('.md', '')}</h3>
-            
-            <div class="blog-preview-text" style="font-size: 1rem; line-height: 1.6; color: var(--text-secondary);">
-                <p>${preview}</p>
-            </div>
-            <div class="blog-full-text" style="display: none; font-size: 1rem; line-height: 1.8; color: #eee; margin-top: 20px;">
-                ${marked.parse(text)}
-            </div>
+            card.innerHTML = `
+                <div style="font-size: 0.75rem; color: var(--accent); margin-bottom: 15px; opacity: 0.8; font-family: 'Inter', sans-serif;">
+                    <i class="fa-regular fa-calendar" style="margin-right: 5px;"></i> ${date}
+                </div>
+                <h3 style="font-size: 2rem; margin-bottom: 20px;">${file.name.replace('.md', '')}</h3>
+                
+                <div class="blog-preview-text" style="font-size: 1rem; line-height: 1.6; color: var(--text-secondary);">
+                    <p>${preview}</p>
+                </div>
+                <div class="blog-full-text" style="display: none; font-size: 1rem; line-height: 1.8; color: #eee; margin-top: 20px;">
+                    ${marked.parse(text)}
+                </div>
 
-            <div class="blog-toggle" style="color: var(--accent); font-weight: 600; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 8px; margin-top: 25px; user-select: none;">
-                <span class="toggle-label">Read Story</span> <i class="fa-solid fa-arrow-right"></i>
-            </div>
-        `;
+                <div class="blog-toggle" style="color: var(--accent); font-weight: 600; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; gap: 8px; margin-top: 25px; user-select: none;">
+                    <span class="toggle-label">Read Story</span> <i class="fa-solid fa-arrow-right"></i>
+                </div>
+            `;
 
-        const previewDiv = card.querySelector('.blog-preview-text');
-        const fullDiv = card.querySelector('.blog-full-text');
-        const toggle = card.querySelector('.blog-toggle');
-        const label = toggle.querySelector('.toggle-label');
-        const icon = toggle.querySelector('i');
+            const previewDiv = card.querySelector('.blog-preview-text');
+            const fullDiv = card.querySelector('.blog-full-text');
+            const toggle = card.querySelector('.blog-toggle');
+            const label = toggle.querySelector('.toggle-label');
+            const icon = toggle.querySelector('i');
 
-        toggle.onclick = (e) => {
-            e.stopPropagation();
-            const isExpanded = fullDiv.style.display === 'block';
-            if (isExpanded) {
-                fullDiv.style.display = 'none';
-                previewDiv.style.display = 'block';
-                label.textContent = 'Read Story';
-                icon.className = 'fa-solid fa-arrow-right';
-                card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } else {
-                fullDiv.style.display = 'block';
-                previewDiv.style.display = 'none';
-                label.textContent = 'Read Less';
-                icon.className = 'fa-solid fa-arrow-up';
-            }
-        };
+            toggle.onclick = (e) => {
+                e.stopPropagation();
+                const isExpanded = fullDiv.style.display === 'block';
+                if (isExpanded) {
+                    fullDiv.style.display = 'none';
+                    previewDiv.style.display = 'block';
+                    label.textContent = 'Read Story';
+                    icon.className = 'fa-solid fa-arrow-right';
+                    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    fullDiv.style.display = 'block';
+                    previewDiv.style.display = 'none';
+                    label.textContent = 'Read Less';
+                    icon.className = 'fa-solid fa-arrow-up';
+                }
+            };
 
-        container.appendChild(card);
+            container.appendChild(card);
+        } catch (e) {
+            console.error('Card render failed:', e);
+        }
     }
 
     // Floating Button Logic

@@ -107,15 +107,38 @@ title: Home
         }
     }
 
+    async function robustFetch(targetUrl) {
+        // Try Direct first
+        try {
+            const direct = await fetch(targetUrl);
+            if (direct.ok) return await direct.text();
+        } catch (e) {}
+
+        // Failover 1: AllOrigins
+        try {
+            const p1 = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+            const r1 = await fetch(p1);
+            if (r1.ok) return await r1.text();
+        } catch (e) {}
+
+        // Failover 2: CorsProxy.io
+        try {
+            const p2 = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+            const r2 = await fetch(p2);
+            if (r2.ok) return await r2.text();
+        } catch (e) {}
+
+        throw new Error("All data bridges are currently unavailable. Please refresh.");
+    }
+
     async function renderBlogCard(file, container) {
-        // Fetch content for preview using CORS Proxy
+        // Fetch content for preview using Robust Proxy System
         const target = `https://drive.google.com/uc?id=${file.id}&export=download`;
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
         
-        const resp = await fetch(proxyUrl);
-        const text = await resp.text();
-        
-        const lines = text.split('\n').filter(l => l.trim() && !l.trim().startsWith('#') && !l.trim().startsWith('`'));
+        try {
+            const text = await robustFetch(target);
+            
+            const lines = text.split('\n').filter(l => l.trim() && !l.trim().startsWith('#') && !l.trim().startsWith('`'));
         const preview = lines[0] ? lines[0].substring(0, 240) + '...' : 'Dive into this trekking story...';
         const date = new Date(file.modifiedTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 

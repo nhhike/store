@@ -109,7 +109,7 @@ title: Home
 
     async function renderBlogCard(file, container) {
         // Fetch content for preview using CORS Proxy
-        const target = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
+        const target = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`;
         const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
         
         const resp = await fetch(proxyUrl);

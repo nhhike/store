@@ -580,18 +580,19 @@ title: Gallery
     async function robustFetch(targetUrl, attempt = 1) {
         const freshUrl = targetUrl + (targetUrl.includes('?') ? '&' : '?') + '_ts=' + Date.now();
         const proxies = [
-            url => url,
+            url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
             url => `https://cors-proxy.htmldriven.com/?url=${encodeURIComponent(url)}`,
             url => `https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=3600&url=${encodeURIComponent(url)}`,
-            url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-            url => `https://api.codetabs.com/v1/proxy/?url=${encodeURIComponent(url)}`
+            url => `https://api.codetabs.com/v1/proxy?url=${encodeURIComponent(url)}`
         ];
 
         for (const getProxyUrl of proxies) {
             try {
                 const url = getProxyUrl(freshUrl);
                 const resp = await fetch(url);
-                if (resp.ok) return await resp.text();
+                const json = await resp.json();
+                const text = json.contents || json;
+                if (text && typeof text === 'string') return text;
             } catch (e) {
                 console.warn(`Bridge failed: ${getProxyUrl(freshUrl)}`);
             }
@@ -607,7 +608,7 @@ title: Gallery
 
     async function loadMarkdownTab(file, pane) {
         try {
-            const target = `https://drive.google.com/uc?id=${file.id}&export=download`;
+            const target = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
             const text = await robustFetch(target);
             const contentHtml = marked.parse(text);
             initCollapsiblePane(pane, contentHtml);
@@ -629,7 +630,7 @@ title: Gallery
         const containerId = `map-${file.id}`;
 
         try {
-            const target = `https://drive.google.com/uc?id=${file.id}&export=download`;
+            const target = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
             const data = await robustFetch(target);
 
             const mapHtml = `

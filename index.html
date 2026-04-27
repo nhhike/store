@@ -89,22 +89,23 @@ title: Home
     const backToTop = document.getElementById('back-to-top');
 
     async function robustFetch(targetUrl, attempt = 1) {
-        // Add internal timestamp to bypass Google's 'Scraper Detection'
+        // Use the professional Media Pipeline for text files
         const freshUrl = targetUrl + (targetUrl.includes('?') ? '&' : '?') + '_ts=' + Date.now();
         
         const proxies = [
-            url => url, // Try Direct
+            url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
             url => `https://cors-proxy.htmldriven.com/?url=${encodeURIComponent(url)}`,
             url => `https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=3600&url=${encodeURIComponent(url)}`,
-            url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-            url => `https://api.codetabs.com/v1/proxy/?url=${encodeURIComponent(url)}`
+            url => `https://api.codetabs.com/v1/proxy?url=${encodeURIComponent(url)}`
         ];
 
         for (const getProxyUrl of proxies) {
             try {
                 const url = getProxyUrl(freshUrl);
                 const resp = await fetch(url);
-                if (resp.ok) return await resp.text();
+                const json = await resp.json();
+                const text = json.contents || json; // Handle both JSON-wrapped and raw
+                if (text && typeof text === 'string') return text;
             } catch (e) {
                 console.warn(`Bridge failed: ${getProxyUrl(freshUrl)}`);
             }
@@ -147,8 +148,9 @@ title: Home
     }
 
     async function renderBlogCard(file, container) {
-        const target = `https://drive.google.com/uc?id=${file.id}&export=download`;
-
+        // Use Official Media Stream Endpoint
+        const target = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
+        
         try {
             const text = await robustFetch(target);
             const lines = text.split('\n').filter(l => l.trim() && !l.trim().startsWith('#') && !l.trim().startsWith('`'));

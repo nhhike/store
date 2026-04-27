@@ -127,23 +127,30 @@ title: Home
         }
 
         try {
-            // Remove mimeType filter to catch files Google might label incorrectly
-            const url = `https://www.googleapis.com/drive/v3/files?q='${BLOG_ROOT_ID}'+in+parents+and+trashed=false&fields=files(id,name,modifiedTime)&orderBy=modifiedTime+desc&key=${API_KEY}`;
+            // Updated to your recommended Wide-Net query
+            const url = `https://www.googleapis.com/drive/v3/files?q='${BLOG_ROOT_ID}'+in+parents+and+trashed=false&fields=files(id,name,modifiedTime,mimeType)&orderBy=modifiedTime+desc&key=${API_KEY}`;
             const response = await fetch(url);
             const data = await response.json();
 
             if (data.error) throw new Error(data.error.message);
             
-            // Filter by filename extension in JavaScript
-            const markdownFiles = (data.files || []).filter(f => f.name.toLowerCase().endsWith('.md'));
-
-            if (markdownFiles.length === 0) {
+            if (!data.files || data.files.length === 0) {
                 feed.innerHTML = '<div style="opacity: 0.5; padding: 40px; text-align: center; width: 100%; grid-column: 1/-1;">No stories found in the blog folder yet.</div>';
                 return;
             }
 
             feed.innerHTML = '';
-            markdownFiles.forEach(file => renderBlogCard(file, feed));
+            // Filter using your recommended .endsWith('.md') safety net
+            const posts = data.files.filter(file => 
+                file.name.toLowerCase().endsWith('.md')
+            );
+
+            if (posts.length === 0) {
+                feed.innerHTML = '<div style="opacity: 0.5; padding: 40px; text-align: center; width: 100%; grid-column: 1/-1;">No .md files found in the NH-HIKE-BLOG folder.</div>';
+                return;
+            }
+
+            posts.forEach(file => renderBlogCard(file, feed));
 
         } catch (err) {
             console.error('Blog load failed:', err);

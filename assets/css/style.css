@@ -435,9 +435,8 @@ body {
 
 .email-img {
     height: 1.1rem;
-    width: 16rem;
-    object-fit: cover;
-    object-position: center;
+    width: auto;
+    object-fit: contain;
     opacity: 0.9;
     vertical-align: middle;
 }

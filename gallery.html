@@ -559,8 +559,9 @@ title: Gallery
     async function loadMarkdownTab(file, pane) {
         try {
             const target = `https://drive.google.com/uc?id=${file.id}&export=download`;
-            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(target)}`;
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}&_=${Date.now()}`;
             const resp = await fetch(proxyUrl);
+            if (!resp.ok) throw new Error('Bridge error');
             const text = await resp.text();
             
             const contentHtml = marked.parse(text);
@@ -583,8 +584,9 @@ title: Gallery
 
         try {
             const target = `https://drive.google.com/uc?id=${file.id}&export=download`;
-            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(target)}`;
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}&_=${Date.now()}`;
             const resp = await fetch(proxyUrl);
+            if (!resp.ok) throw new Error('Bridge error');
             const data = await resp.text();
 
             const mapHtml = `

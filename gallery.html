@@ -559,8 +559,9 @@ title: Gallery
 
     async function loadMarkdownTab(file, pane) {
         try {
-            const url = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
-            const resp = await fetch(url);
+            const target = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
+            const resp = await fetch(proxyUrl);
 
             if (!resp.ok) {
                 const errData = await resp.json().catch(() => ({ error: { message: resp.statusText } }));
@@ -590,8 +591,9 @@ title: Gallery
         const containerId = `map-${file.id}`;
 
         try {
-            const url = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
-            const resp = await fetch(url);
+            const target = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
+            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
+            const resp = await fetch(proxyUrl);
             if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
             const data = await resp.text();
 

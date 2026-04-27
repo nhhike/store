@@ -108,8 +108,11 @@ title: Home
     }
 
     async function renderBlogCard(file, container) {
-        const contentUrl = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
-        const resp = await fetch(contentUrl);
+        // Fetch content for preview using CORS Proxy
+        const target = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
+        
+        const resp = await fetch(proxyUrl);
         const text = await resp.text();
         
         const lines = text.split('\n').filter(l => l.trim() && !l.trim().startsWith('#') && !l.trim().startsWith('`'));

@@ -580,6 +580,13 @@ title: Gallery
         }
     }
     async function robustFetch(targetUrl, attempt = 1) {
+        if (targetUrl.includes('alt=media')) {
+            try {
+                const resp = await fetch(targetUrl);
+                if (resp.ok) return await resp.text();
+            } catch (e) { }
+        }
+
         const freshUrl = targetUrl + (targetUrl.includes('?') ? '&' : '?') + '_ts=' + Date.now();
         const proxies = [
             url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
@@ -595,9 +602,7 @@ title: Gallery
                 const json = await resp.json();
                 const text = json.contents || json;
                 if (text && typeof text === 'string') return text;
-            } catch (e) {
-                console.warn(`Bridge failed: ${getProxyUrl(freshUrl)}`);
-            }
+            } catch (e) { }
         }
 
         if (attempt < 2) {
@@ -609,9 +614,17 @@ title: Gallery
     }
 
     async function loadMarkdownTab(file, pane) {
+        console.log(`Loading Tab: ${file.name} | MIME: ${file.mimeType}`);
         try {
             const target = `https://www.googleapis.com/drive/v3/files/${file.id}?alt=media&key=${API_KEY}`;
-            const text = await robustFetch(target);
+            let text = await robustFetch(target);
+            
+            if (text.trim().startsWith('data:')) {
+                const base64Part = text.split(',')[1];
+                text = atob(base64Part);
+            }
+
+            if (!text) throw new Error('Content unavailable');
             const contentHtml = marked.parse(text);
             initCollapsiblePane(pane, contentHtml);
 

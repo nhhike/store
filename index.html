@@ -113,7 +113,7 @@ title: Home
         const target = `https://drive.google.com/uc?id=${file.id}&export=download`;
         
         try {
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
+            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(target)}`;
             const resp = await fetch(proxyUrl);
             if (!resp.ok) throw new Error('Proxy error');
             const text = await resp.text();

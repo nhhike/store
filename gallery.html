@@ -559,7 +559,7 @@ title: Gallery
     async function loadMarkdownTab(file, pane) {
         try {
             const target = `https://drive.google.com/uc?id=${file.id}&export=download`;
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
+            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(target)}`;
             const resp = await fetch(proxyUrl);
             const text = await resp.text();
             
@@ -583,7 +583,7 @@ title: Gallery
 
         try {
             const target = `https://drive.google.com/uc?id=${file.id}&export=download`;
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
+            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(target)}`;
             const resp = await fetch(proxyUrl);
             const data = await resp.text();
 

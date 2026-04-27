@@ -556,21 +556,34 @@ title: Gallery
             }, 100);
         }
     }
+    async function robustFetch(targetUrl) {
+        // Try Direct first
+        try {
+            const direct = await fetch(targetUrl);
+            if (direct.ok) return await direct.text();
+        } catch (e) {}
+
+        // Failover 1: AllOrigins
+        try {
+            const p1 = `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`;
+            const r1 = await fetch(p1);
+            if (r1.ok) return await r1.text();
+        } catch (e) {}
+
+        // Failover 2: CorsProxy.io
+        try {
+            const p2 = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+            const r2 = await fetch(p2);
+            if (r2.ok) return await r2.text();
+        } catch (e) {}
+
+        throw new Error("Connection timed out. Please try again.");
+    }
+
     async function loadMarkdownTab(file, pane) {
         try {
             const target = `https://drive.google.com/uc?id=${file.id}&export=download`;
-            let text = '';
-            try {
-                const d = await fetch(target);
-                if (!d.ok) throw new Error();
-                text = await d.text();
-            } catch (e) {
-                const proxyUrl = `https://thingproxy.freeboard.io/fetch/${target}`;
-                const resp = await fetch(proxyUrl);
-                text = await resp.text();
-            }
-
-            if (!text) throw new Error('Content unavailable');
+            const text = await robustFetch(target);
             const contentHtml = marked.parse(text);
             initCollapsiblePane(pane, contentHtml);
 
@@ -581,6 +594,7 @@ title: Gallery
                     <i class="fa-solid fa-triangle-exclamation" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
                     <p style="font-weight: 600;">Failed to load "${file.name}"</p>
                     <p style="font-size: 0.85rem; opacity: 0.8; margin-top: 5px;">${e.message}</p>
+                    <button onclick="location.reload()" style="margin-top: 15px; background: var(--accent); border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.8rem;">Retry Boarding</button>
                 </div>
             `;
         }
@@ -591,18 +605,7 @@ title: Gallery
 
         try {
             const target = `https://drive.google.com/uc?id=${file.id}&export=download`;
-            let data = '';
-            try {
-                const d = await fetch(target);
-                if (!d.ok) throw new Error();
-                data = await d.text();
-            } catch (e) {
-                const proxyUrl = `https://thingproxy.freeboard.io/fetch/${target}`;
-                const resp = await fetch(proxyUrl);
-                data = await resp.text();
-            }
-            
-            if (!data) throw new Error('Map data unavailable');
+            const data = await robustFetch(target);
 
             const mapHtml = `
                 <div style="position: relative;">
@@ -693,19 +696,11 @@ title: Gallery
             toggle.style.display = 'none'; // No need for toggle if auto-expanded
         }
 
-        // Force redraw and height calculation
-        const checkHeight = () => {
-            if (inner.scrollHeight > 150) {
+        setTimeout(() => {
+            if (!autoExpand && inner.scrollHeight > 150) {
                 toggle.style.display = 'block';
-            } else if (inner.scrollHeight > 0) {
-                wrapper.classList.add('expanded'); // Auto-expand if short but present
             }
-        };
-
-        // Try several times as images/text load
-        checkHeight();
-        setTimeout(checkHeight, 500);
-        setTimeout(checkHeight, 1500);
+        }, 800);
 
         toggle.addEventListener('click', () => {
             const isExpanded = wrapper.classList.contains('expanded');

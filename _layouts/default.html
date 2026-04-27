@@ -78,6 +78,22 @@
     </nav>
 
     {{ content }}
+ 
+    <footer class="footer glass-footer">
+        <div class="footer-container">
+            <div class="footer-links">
+                <a href="{{ '/about.html' | relative_url }}">About</a>
+                <a href="{{ '/privacy-policy.html' | relative_url }}">Privacy Policy</a>
+            </div>
+            <div class="footer-email">
+                <span>Contact: </span>
+                <img src="{{ '/assets/images/developer-email.png' | relative_url }}" alt="Contact Email" class="email-img">
+            </div>
+            <div class="footer-copy">
+                &copy; {{ "now" | date: "%Y" }} NH-Hike. All rights reserved.
+            </div>
+        </div>
+    </footer>
 
     <script>
         // Navigation Logic - Click-to-Open (Runs on all pages)

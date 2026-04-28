@@ -655,9 +655,10 @@ async function loadMapTab(file, pane) {
             
             if (!data) throw new Error('Map data unavailable');
 
+            const safeFileName = file.name.replace(/'/g, "\\'");
             const mapHtml = `
                 <div style="position: relative;">
-                    <button onclick="downloadFile('${file.id}', '${file.name}')" 
+                    <button onclick="downloadFile('${file.id}', '${safeFileName}')" 
                         style="position: absolute; top: 15px; right: 15px; z-index: 1000; background: var(--accent); color: #000; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.7rem; cursor: pointer; font-weight: 700; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: 0.3s;"
                         onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                         <i class="fa-solid fa-download"></i> Download GPX
@@ -1086,13 +1087,34 @@ async function loadMapTab(file, pane) {
         }
     });
 
-    function downloadFile(fileId, fileName) {
-        const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${API_KEY}`;
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    async function downloadFile(fileId, fileName) {
+        try {
+            const url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${API_KEY}`;
+            // Use the same reliable bridge system the map uses
+            let data = await robustFetch(url);
+            
+            // Decrypt if Google wrapped it
+            if (data && typeof data === 'string' && data.trim().startsWith('data:')) {
+                const base64Part = data.split(',')[1];
+                data = atob(base64Part);
+            }
+
+            // Creating a Blob allows the browser to bypass cross-origin restrictions on 'download' attribute
+            const blob = new Blob([data], { type: 'text/plain;charset=utf-8' });
+            const objectUrl = URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = objectUrl;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(objectUrl), 100);
+            
+        } catch (e) {
+            console.error('Safe download failed:', e);
+            // Absolute worst-case fallback: gracefully open the file standardly.
+            window.open(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${API_KEY}`, '_blank');
+        }
     }
 </script>

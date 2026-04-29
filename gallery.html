@@ -579,38 +579,30 @@ title: Gallery
             }, 100);
         }
     }
-    async function robustFetch(targetUrl, attempt = 1) {
-        if (targetUrl.includes('alt=media')) {
-            try {
-                const resp = await fetch(targetUrl);
-                if (resp.ok) return await resp.text();
-            } catch (e) { }
+    async function robustFetch(targetUrl, attempt = 1, maxAttempts = 4) {
+        try {
+            // Force cache busting to avoid stale proxy/browser cache from previous errors
+            const freshUrl = targetUrl + (targetUrl.includes('?') ? '&' : '?') + '_ts=' + Date.now();
+            
+            const resp = await fetch(freshUrl);
+            if (resp.ok) {
+                return await resp.text();
+            } else if (resp.status === 403 || resp.status === 429) {
+                // Rate limited or temporary forbidden, throw to trigger retry
+                throw new Error(`Google Drive API Rate Limit (Status ${resp.status})`);
+            } else {
+                throw new Error(`Fetch failed with status ${resp.status}`);
+            }
+        } catch (e) {
+            if (attempt < maxAttempts) {
+                // Exponential backoff: 1s, 2s, 4s...
+                const delay = Math.pow(2, attempt - 1) * 1000;
+                console.warn(`Fetch attempt ${attempt} failed, retrying in ${delay}ms...`, e);
+                await new Promise(r => setTimeout(r, delay));
+                return await robustFetch(targetUrl, attempt + 1, maxAttempts);
+            }
+            throw new Error("Unable to fetch data from Google Drive after multiple attempts.");
         }
-
-        const freshUrl = targetUrl + (targetUrl.includes('?') ? '&' : '?') + '_ts=' + Date.now();
-        const proxies = [
-            url => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-            url => `https://cors-proxy.htmldriven.com/?url=${encodeURIComponent(url)}`,
-            url => `https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&refresh=3600&url=${encodeURIComponent(url)}`,
-            url => `https://api.codetabs.com/v1/proxy?url=${encodeURIComponent(url)}`
-        ];
-
-        for (const getProxyUrl of proxies) {
-            try {
-                const url = getProxyUrl(freshUrl);
-                const resp = await fetch(url);
-                const json = await resp.json();
-                const text = json.contents || json;
-                if (text && typeof text === 'string') return text;
-            } catch (e) { }
-        }
-
-        if (attempt < 2) {
-            await new Promise(r => setTimeout(r, 800));
-            return await robustFetch(targetUrl, attempt + 1);
-        }
-
-        throw new Error("Temporary network delay. Please refresh.");
     }
 
     async function loadMarkdownTab(file, pane) {

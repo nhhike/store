@@ -815,7 +815,7 @@ async function loadMapTab(file, pane) {
             img.style.maxWidth = '100%'; img.style.maxHeight = '100%'; img.style.borderRadius = '8px';
             img.style.transition = 'transform 0.1s ease-out';
             img.style.touchAction = 'none'; // Prevent page scrolling while zooming image
-            img.style.cursor = 'zoom-in';
+            img.style.cursor = 'ns-resize'; // Indicates scroll wheel action
 
             setupZoom(img);
             modalContent.appendChild(img);
@@ -854,7 +854,7 @@ async function loadMapTab(file, pane) {
         if (!img) return;
         img.style.transition = smooth ? 'transform 0.3s cubic-bezier(0.2, 0, 0.2, 1)' : 'none';
         img.style.transform = `translate(${zoomPosX}px, ${zoomPosY}px) scale(${zoomScale})`;
-        img.style.cursor = zoomScale > 1 ? 'grab' : 'zoom-in';
+        img.style.cursor = zoomScale > 1 ? 'grab' : 'ns-resize';
     };
 
     let isPanning = false;
@@ -954,7 +954,7 @@ async function loadMapTab(file, pane) {
         if (activePointers.size === 0) isPanning = false;
 
         const img = modalContent.querySelector('img');
-        if (img) img.style.cursor = zoomScale > 1 ? 'grab' : 'zoom-in';
+        if (img) img.style.cursor = zoomScale > 1 ? 'grab' : 'ns-resize';
     };
 
     modal.onpointerup = stopModalGesture;

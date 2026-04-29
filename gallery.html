@@ -422,7 +422,7 @@ title: Gallery
                 header.textContent = groupLabel;
                 dropdown.appendChild(header);
 
-                items.sort((a, b) => (b.year - a.year) || a.name.localeCompare(b.name)).forEach(item => {
+                items.sort((a, b) => b.name.localeCompare(a.name)).forEach(item => {
                     const div = document.createElement('div');
                     div.className = 'picker-item';
                     div.textContent = item.name;

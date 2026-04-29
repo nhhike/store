@@ -35,8 +35,13 @@
             <!-- Desktop Menu -->
             <ul class="nav-menu" id="desktop-menu">
                 <li class="nav-item"><a href="{{ '/trails.html' | relative_url }}" class="nav-link">Trails</a></li>
-                <li class="nav-item"><a href="{{ '/gear.html' | relative_url }}" class="nav-link">Gear</a></li>
-                <li class="nav-item"><a href="{{ '/essentials.html' | relative_url }}" class="nav-link">Essentials</a></li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link dropdown-toggle">Gear <i class="fa-solid fa-chevron-down"></i></a>
+                    <div class="dropdown">
+                        <a href="{{ '/gear.html' | relative_url }}">Recommended Gear</a>
+                        <a href="{{ '/essentials.html' | relative_url }}">Essentials</a>
+                    </div>
+                </li>
                 <li class="nav-item"><a href="{{ '/gallery.html' | relative_url }}" class="nav-link">Gallery</a></li>
                 <li class="nav-item"><a href="{{ '/app-development.html' | relative_url }}" class="nav-link">Downloads</a></li>
                 <li class="nav-item">
@@ -70,8 +75,13 @@
             <ul class="mobile-nav">
                 <li class="mobile-item"><a href="{{ '/' | relative_url }}" class="mobile-link">Home</a></li>
                 <li class="mobile-item"><a href="{{ '/trails.html' | relative_url }}" class="mobile-link">Trails</a></li>
-                <li class="mobile-item"><a href="{{ '/gear.html' | relative_url }}" class="mobile-link">Gear</a></li>
-                <li class="mobile-item"><a href="{{ '/essentials.html' | relative_url }}" class="mobile-link">Essentials</a></li>
+                <li class="mobile-item">
+                    <a href="#" class="mobile-link dropdown-toggle">Gear <i class="fa-solid fa-chevron-down"></i></a>
+                    <div class="mobile-dropdown">
+                        <a href="{{ '/gear.html' | relative_url }}">Recommended Gear</a>
+                        <a href="{{ '/essentials.html' | relative_url }}">Essentials</a>
+                    </div>
+                </li>
                 <li class="mobile-item"><a href="{{ '/gallery.html' | relative_url }}" class="mobile-link">Gallery</a></li>
                 <li class="mobile-item"><a href="{{ '/app-development.html' | relative_url }}" class="mobile-link">Downloads</a></li>
                 <li class="mobile-item">

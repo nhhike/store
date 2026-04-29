@@ -1,0 +1,114 @@
+---
+layout: default
+title: Track Converter
+---
+
+<section class="hero">
+    <div class="hero-content">
+        <h1>GPX to KML Converter</h1>
+        <p>Convert your GPX track files to KML format securely in your browser.</p>
+        
+        <div class="main-content">
+            <div class="glass-content" style="max-width: 600px; margin: 0 auto; text-align: center; padding: 40px; border-radius: 20px;">
+                <h2 style="margin-bottom: 20px;">Upload your .gpx file</h2>
+                
+                <div class="upload-container" style="margin-bottom: 30px;">
+                    <label for="gpxFile" class="btn" style="cursor: pointer; display: inline-block;">
+                        <i class="fa-solid fa-file-arrow-up" style="margin-right: 8px;"></i> Select .GPX File
+                    </label>
+                    <input type="file" id="gpxFile" accept=".gpx" style="display: none;" onchange="updateFileName()">
+                    <div id="fileNameDisplay" style="margin-top: 15px; font-weight: bold; color: var(--text-dim);">No file selected</div>
+                </div>
+                
+                <button onclick="convertGPXtoKML()" class="btn" id="convertBtn" style="background: var(--accent); color: #000; opacity: 0.5; cursor: not-allowed; pointer-events: none; border: none; margin: 0 auto;">
+                    <i class="fa-solid fa-rotate" style="margin-right: 8px;"></i> Convert to KML
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/togeojson/0.16.0/togeojson.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tokml/0.4.0/tokml.min.js"></script>
+
+<script>
+    function updateFileName() {
+        const fileInput = document.getElementById('gpxFile');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const convertBtn = document.getElementById('convertBtn');
+        
+        if (fileInput.files.length > 0) {
+            fileNameDisplay.textContent = fileInput.files[0].name;
+            fileNameDisplay.style.color = "var(--text-color)";
+            convertBtn.style.opacity = '1';
+            convertBtn.style.cursor = 'pointer';
+            convertBtn.style.pointerEvents = 'auto';
+        } else {
+            fileNameDisplay.textContent = 'No file selected';
+            fileNameDisplay.style.color = "var(--text-dim)";
+            convertBtn.style.opacity = '0.5';
+            convertBtn.style.cursor = 'not-allowed';
+            convertBtn.style.pointerEvents = 'none';
+        }
+    }
+
+    async function convertGPXtoKML() {
+        const fileInput = document.getElementById('gpxFile');
+        const file = fileInput.files[0];
+        if (!file) {
+            alert("Please select a .gpx file");
+            return;
+        }
+
+        const convertBtn = document.getElementById('convertBtn');
+        const originalText = convertBtn.innerHTML;
+        convertBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right: 8px;"></i> Converting...';
+        convertBtn.style.pointerEvents = 'none';
+
+        setTimeout(() => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    // Parse GPX
+                    const parser = new DOMParser();
+                    const gpxDoc = parser.parseFromString(e.target.result, "text/xml");
+
+                    // Convert GPX → GeoJSON
+                    const geojson = toGeoJSON.gpx(gpxDoc);
+
+                    // Convert GeoJSON → KML
+                    const kmlString = tokml(geojson, {
+                        documentName: file.name.replace('.gpx', ''),
+                        documentDescription: 'Converted from GPX',
+                        name: 'name',           // property used for Placemark name
+                        description: 'desc'     // property used for Placemark description
+                    });
+
+                    // Download the KML
+                    downloadFile(kmlString, file.name.replace('.gpx', '.kml'), 'application/vnd.google-earth.kml+xml');
+                    console.log("Conversion successful!");
+
+                } catch (err) {
+                    console.error(err);
+                    alert("Error during conversion: " + err.message);
+                } finally {
+                    convertBtn.innerHTML = originalText;
+                    convertBtn.style.pointerEvents = 'auto';
+                }
+            };
+            reader.readAsText(file);
+        }, 500); // slight delay to allow UI to update
+    }
+
+    function downloadFile(content, fileName, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+</script>

@@ -122,15 +122,15 @@ title: Home
         }
 
         try {
-            // Updated to your recommended Wide-Net query
-            const url = `https://www.googleapis.com/drive/v3/files?q='${BLOG_ROOT_ID}'+in+parents+and+trashed=false&fields=files(id,name,modifiedTime,mimeType)&orderBy=modifiedTime+desc&key=${API_KEY}`;
+            // Updated to your recommended Wide-Net query with increased page size
+            const url = `https://www.googleapis.com/drive/v3/files?q='${BLOG_ROOT_ID}'+in+parents+and+trashed=false&fields=files(id,name,modifiedTime,mimeType)&orderBy=modifiedTime+desc&pageSize=1000&key=${API_KEY}`;
             const response = await fetch(url);
             const data = await response.json();
 
             if (data.error) throw new Error(data.error.message);
             
             if (!data.files || data.files.length === 0) {
-                feed.innerHTML = '<div style="opacity: 0.5; padding: 40px; text-align: center; width: 100%; grid-column: 1/-1;">No stories found in the blog folder yet.</div>';
+                feed.innerHTML = '<div style="opacity: 0.5; padding: 40px; text-align: center; width: 100%; grid-column: 1/-1;">No files found in the blog folder (ID: ' + BLOG_ROOT_ID + ').</div>';
                 return;
             }
 

@@ -449,7 +449,7 @@ title: Gallery
 
     async function populateDropdown(regionId, dropdown, label, trigger) {
         try {
-            const url = `https://www.googleapis.com/drive/v3/files?q='${regionId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType)&key=${API_KEY}`;
+            const url = `https://www.googleapis.com/drive/v3/files?q='${regionId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType)&pageSize=1000&key=${API_KEY}`;
             const response = await fetch(url);
             const data = await response.json();
             
@@ -472,10 +472,15 @@ title: Gallery
                 div.onclick = (e) => {
                     e.stopPropagation();
                     
-                    // Reset all other labels
-                    document.querySelectorAll('.selected-label').forEach(l => l.textContent = '-- Select Collection --');
+                    // Reset all labels and active states
+                    document.querySelectorAll('.selected-label').forEach(l => {
+                        l.textContent = '-- Select Collection --';
+                        l.style.color = '#fff';
+                    });
+                    document.querySelectorAll('.custom-picker').forEach(p => p.classList.remove('active'));
                     
                     label.textContent = item.name;
+                    label.style.color = 'var(--accent)';
                     dropdown.classList.remove('show');
                     trigger.classList.remove('active');
                     loadFolder(item.id);
@@ -498,7 +503,7 @@ title: Gallery
 
         try {
             // Remove MIME type restrictions to catch files Google labels incorrectly
-            const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,webContentLink,imageMediaMetadata,videoMediaMetadata)&key=${API_KEY}`;
+            const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,webContentLink,imageMediaMetadata,videoMediaMetadata)&pageSize=1000&key=${API_KEY}`;
             const response = await fetch(url);
             const data = await response.json();
 

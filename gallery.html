@@ -135,6 +135,11 @@ title: Gallery
         width: min(100%, 300px);
         text-align: left;
         z-index: 1100;
+        transition: z-index 0.3s;
+    }
+
+    .custom-picker.active {
+        z-index: 3000;
     }
 
     .picker-label-top {
@@ -179,7 +184,7 @@ title: Gallery
         top: calc(100% - 1px);
         left: 0;
         right: 0;
-        background: #1e293b;
+        background: #1e293b; /* Solid background */
         border: 1px solid var(--accent);
         border-top: none;
         border-radius: 0 0 20px 20px;
@@ -390,6 +395,7 @@ title: Gallery
             window.addEventListener('click', () => {
                 document.querySelectorAll('.picker-dropdown').forEach(d => d.classList.remove('show'));
                 document.querySelectorAll('.picker-trigger').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.custom-picker').forEach(p => p.classList.remove('active'));
             });
 
         } catch (err) {
@@ -427,13 +433,15 @@ title: Gallery
             // Toggle current
             const isOpen = dropdown.classList.contains('show');
             
-            // Close others
+            // Close others and reset z-indexes
             document.querySelectorAll('.picker-dropdown').forEach(d => d.classList.remove('show'));
             document.querySelectorAll('.picker-trigger').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.custom-picker').forEach(p => p.classList.remove('active'));
 
             if (!isOpen) {
                 trigger.classList.add('active');
                 dropdown.classList.add('show');
+                pickerDiv.classList.add('active'); // Boost z-index to stay above other pickers
                 
                 // Fetch sub-folders if not already loaded
                 if (dropdown.dataset.loaded !== 'true') {

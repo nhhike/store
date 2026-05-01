@@ -122,12 +122,29 @@ title: Gallery
     }
 
     /* Custom Dropdown Styles */
+    .pickers-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+        margin-top: 20px;
+    }
+
     .custom-picker {
         position: relative;
-        width: min(100%, 400px);
-        margin: 0 auto;
+        width: min(100%, 300px);
         text-align: left;
         z-index: 1100;
+    }
+
+    .picker-label-top {
+        color: var(--accent);
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        letter-spacing: 1px;
+        text-align: center;
     }
 
     .picker-trigger {
@@ -135,14 +152,12 @@ title: Gallery
         color: #fff;
         border: 1px solid var(--glass-border);
         padding: 8px 18px;
-        /* Decreased padding */
         border-radius: 50px;
         cursor: pointer;
         display: flex;
         justify-content: space-between;
         align-items: center;
         font-size: 0.75rem;
-        /* Decreased font size */
         transition: 0.3s;
         min-height: 40px;
     }
@@ -155,7 +170,6 @@ title: Gallery
     .picker-trigger.active {
         border-color: var(--accent);
         border-bottom-color: transparent;
-        /* Seamless link to dropdown */
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
     }
@@ -163,14 +177,11 @@ title: Gallery
     .picker-dropdown {
         position: absolute;
         top: calc(100% - 1px);
-        /* Remove gap */
         left: 0;
         right: 0;
         background: #1e293b;
         border: 1px solid var(--accent);
-        /* Sync border color */
         border-top: none;
-        /* Seamless junction */
         border-radius: 0 0 20px 20px;
         max-height: 350px;
         overflow-y: auto;
@@ -194,29 +205,17 @@ title: Gallery
         display: block;
     }
 
-    .picker-group {
-        padding: 5px 0 2px;
-    }
-
-    .picker-group-label {
-        color: var(--accent);
-        font-weight: 800;
-        font-size: 0.7rem;
-        padding: 8px 15px 4px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        opacity: 1;
-        /* Full opacity for better visibility */
-    }
-
     .picker-item {
         color: #fff;
-        padding: 4px 15px 4px 45px;
-        /* Increased indentation, decreased padding */
+        padding: 8px 20px;
         cursor: pointer;
         font-size: 0.7rem;
-        /* Decreased font size */
         transition: 0.2s;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .picker-item:last-child {
+        border-bottom: none;
     }
 
     .picker-item:hover {
@@ -235,17 +234,12 @@ title: Gallery
 <div class="main-content" style="max-width: 1200px; margin: 0 auto; padding: 0 20px 50px;">
     <!-- Gallery Picker -->
     <div class="glass-content" style="margin-bottom: 30px; text-align: center; position: relative; z-index: 1200;">
-        <h3 style="color: var(--accent); margin-bottom: 20px;">Select a Collection</h3>
+        <h3 style="color: var(--accent); margin-bottom: 10px;">Select a Collection</h3>
+        <p style="font-size: 0.8rem; opacity: 0.7; margin-bottom: 20px;">Browse by region or activity</p>
 
-        <!-- Custom Custom Dropdown -->
-        <div class="custom-picker">
-            <div id="picker-trigger" class="picker-trigger">
-                <span id="selected-label">-- Select a Gallery --</span>
-                <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem;"></i>
-            </div>
-            <div id="picker-dropdown" class="picker-dropdown">
-                <!-- Data populated via JS -->
-            </div>
+        <!-- Dynamic Pickers Container -->
+        <div id="pickers-container" class="pickers-container">
+            <div style="width: 100%; color: var(--accent);"><i class="fa-solid fa-spinner fa-spin"></i> Loading Regions...</div>
         </div>
 
         <div id="api-notice" style="display: none; margin-top: 15px; font-size: 0.8rem; color: var(--accent);">
@@ -366,97 +360,130 @@ title: Gallery
 
     async function initGallery() {
         try {
-            const dropdown = document.getElementById('picker-dropdown');
-            const trigger = document.getElementById('picker-trigger');
-            const label = document.getElementById('selected-label');
-
-            // Load Dynamic Groups
-            let groupNames = [];
-            try {
-                const gResp = await fetch('assets/galleryGroups.txt');
-                const gText = await gResp.text();
-                groupNames = gText.split('\n')
-                    .map(g => g.trim())
-                    .filter(g => g && g.toLowerCase() !== 'other');
-            } catch (e) {
-                console.warn('Gallery groups file not found or failed to load');
-            }
-
+            const container = document.getElementById('pickers-container');
+            
+            // 1. Fetch Top Level Regions
             const url = `https://www.googleapis.com/drive/v3/files?q='${ROOT_ID}'+in+parents+and+trashed=false&fields=files(id,name,mimeType)&key=${API_KEY}`;
             const response = await fetch(url);
             const data = await response.json();
 
             if (data.error) throw new Error(data.error.message);
 
-            const folders = data.files.filter(f =>
+            const regions = data.files.filter(f =>
                 f.mimeType === 'application/vnd.google-apps.folder' ||
                 f.mimeType === 'application/vnd.google-apps.shortcut'
-            );
+            ).sort((a, b) => a.name.localeCompare(b.name));
 
-            // Group and Sort Folders
-            const groups = {};
-            folders.forEach(f => {
-                const name = f.name;
-                const match = name.match(/^(\d{4})\s+(.*)/);
-                const year = match ? parseInt(match[1]) : 0;
+            if (regions.length === 0) {
+                container.innerHTML = '<p>No regions found in gallery root.</p>';
+                return;
+            }
 
-                let assignedGroup = "Other";
-                for (const gName of groupNames) {
-                    if (name.toLowerCase().includes(gName.toLowerCase())) {
-                        assignedGroup = gName;
-                        break;
-                    }
-                }
+            container.innerHTML = ''; // Clear spinner
 
-                if (!groups[assignedGroup]) groups[assignedGroup] = [];
-                groups[assignedGroup].push({ id: f.id, name, year });
-            });
+            // 2. For each region, create a picker
+            for (const region of regions) {
+                createPickerForRegion(region);
+            }
 
-            dropdown.innerHTML = '';
-
-            const renderGroup = (groupLabel, items) => {
-                if (!items || items.length === 0) return;
-
-                const header = document.createElement('div');
-                header.className = 'picker-group-label';
-                header.textContent = groupLabel;
-                dropdown.appendChild(header);
-
-                items.sort((a, b) => b.name.localeCompare(a.name)).forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'picker-item';
-                    div.textContent = item.name;
-                    div.onclick = () => {
-                        label.textContent = item.name;
-                        dropdown.classList.remove('show');
-                        trigger.classList.remove('active');
-                        loadFolder(item.id);
-                    };
-                    dropdown.appendChild(div);
-                });
-            };
-
-            // Render groups
-            groupNames.forEach(g => renderGroup(g, groups[g]));
-            renderGroup("Other", groups["Other"]);
-
-            // Toggle logic
-            trigger.onclick = (e) => {
-                e.stopPropagation();
-                trigger.classList.toggle('active');
-                dropdown.classList.toggle('show');
-            };
-
-            // Close outside
+            // Close all dropdowns when clicking outside
             window.addEventListener('click', () => {
-                dropdown.classList.remove('show');
-                trigger.classList.remove('active');
+                document.querySelectorAll('.picker-dropdown').forEach(d => d.classList.remove('show'));
+                document.querySelectorAll('.picker-trigger').forEach(t => t.classList.remove('active'));
             });
 
         } catch (err) {
             console.error('Gallery init failed:', err);
-            const trigger = document.getElementById('picker-trigger');
-            if (trigger) trigger.innerHTML = `<span style="color:red">Error: ${err.message}</span>`;
+            const container = document.getElementById('pickers-container');
+            if (container) container.innerHTML = `<p style="color:red">Error: ${err.message}</p>`;
+        }
+    }
+
+    async function createPickerForRegion(region) {
+        const container = document.getElementById('pickers-container');
+        
+        // Create Picker HTML
+        const pickerDiv = document.createElement('div');
+        pickerDiv.className = 'custom-picker';
+        pickerDiv.innerHTML = `
+            <div class="picker-label-top">${region.name}</div>
+            <div class="picker-trigger" id="trigger-${region.id}">
+                <span class="selected-label">-- Select Collection --</span>
+                <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem;"></i>
+            </div>
+            <div class="picker-dropdown" id="dropdown-${region.id}">
+                <div style="padding: 10px; text-align: center;"><i class="fa-solid fa-spinner fa-spin"></i></div>
+            </div>
+        `;
+        container.appendChild(pickerDiv);
+
+        const trigger = pickerDiv.querySelector('.picker-trigger');
+        const dropdown = pickerDiv.querySelector('.picker-dropdown');
+        const label = pickerDiv.querySelector('.selected-label');
+
+        trigger.onclick = async (e) => {
+            e.stopPropagation();
+            
+            // Toggle current
+            const isOpen = dropdown.classList.contains('show');
+            
+            // Close others
+            document.querySelectorAll('.picker-dropdown').forEach(d => d.classList.remove('show'));
+            document.querySelectorAll('.picker-trigger').forEach(t => t.classList.remove('active'));
+
+            if (!isOpen) {
+                trigger.classList.add('active');
+                dropdown.classList.add('show');
+                
+                // Fetch sub-folders if not already loaded
+                if (dropdown.dataset.loaded !== 'true') {
+                    await populateDropdown(region.id, dropdown, label, trigger);
+                }
+            }
+        };
+    }
+
+    async function populateDropdown(regionId, dropdown, label, trigger) {
+        try {
+            const url = `https://www.googleapis.com/drive/v3/files?q='${regionId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType)&key=${API_KEY}`;
+            const response = await fetch(url);
+            const data = await response.json();
+            
+            const collections = (data.files || []).filter(f =>
+                f.mimeType === 'application/vnd.google-apps.folder' ||
+                f.mimeType === 'application/vnd.google-apps.shortcut'
+            ).sort((a, b) => b.name.localeCompare(a.name)); // Sort descending by name (years usually at front)
+
+            dropdown.innerHTML = '';
+            
+            if (collections.length === 0) {
+                dropdown.innerHTML = '<div style="padding: 10px; font-size: 0.7rem; color: #888;">No collections found</div>';
+                return;
+            }
+
+            collections.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'picker-item';
+                div.textContent = item.name;
+                div.onclick = (e) => {
+                    e.stopPropagation();
+                    
+                    // Reset all other labels
+                    document.querySelectorAll('.selected-label').forEach(l => l.textContent = '-- Select Collection --');
+                    
+                    label.textContent = item.name;
+                    dropdown.classList.remove('show');
+                    trigger.classList.remove('active');
+                    loadFolder(item.id);
+                };
+                dropdown.appendChild(div);
+            });
+
+            dropdown.dataset.loaded = 'true';
+
+        } catch (err) {
+            console.error('Failed to populate dropdown:', err);
+            dropdown.innerHTML = '<div style="padding: 10px; color: red;">Error loading items</div>';
         }
     }
 
